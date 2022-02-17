@@ -11,7 +11,7 @@ module.exports = class Controller {
      */
     static chooseThumbnail(thumbnails){
         
-        let url = "", score = 0, name, regex = /(.*?)cursed_\S+/;
+        let downloadLink = "", url, score = 0;
 
         for(let image of thumbnails.children){
             const data = image.data;
@@ -20,15 +20,19 @@ module.exports = class Controller {
             if(! data.created*1000 > this.yesterday) break;
 
             // Take the image with the best score
-            if(! data.over_18 && data.score > score && ! data.is_video && ! data.over_18 && ! data.title.includes("Removed by reddit")){
+            if(! data.over_18 && data.score > score && ! data.is_video && ! data.title.includes("Removed by reddit") && ! data.pinned){
                 score = data.score;
+
+                downloadLink = data.url;
                 url = data.permalink;
-                name = data.permalink.replace(regex, "$1");
             }
         }
         
-        if(url === "") throw "No thumbnail found for today";
+        if(downloadLink === "") throw "No thumbnail found for today";
 
-        return new Thumbnail(url, name);
+        return new Thumbnail(url, downloadLink);
     }
 }
+
+//name = data.permalink.replace(regex, '').replace('/', '');
+//regex = /(\/r\/Cursed_Images\/comments\/)([A-Za-z]*\/)/

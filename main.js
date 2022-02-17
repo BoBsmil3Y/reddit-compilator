@@ -1,5 +1,6 @@
 const RRequest = require("./model/RedditRequest.js");
 const Controller = require("./controller/Controller.js");
+const fs = require('fs');
 
 //"name" = [% , minDuration, maxDuration, (TODO)miniScore] 
 const subreddit = {
@@ -18,16 +19,29 @@ function main(){
   let thumbnail;
   RRequest.getPosts("thumbnail", "cursed_images", 50).then(data => {
     try {
-      thumbnail = Controller.chooseThumbnail(data);
+
+      thumbnail = Controller.chooseThumbnail(data);      
+      RRequest.downloadImage(thumbnail.downloadLink).then(image => { 
+
+        const buffer = Buffer.from(image.data, 'base64');
+        fs.writeFile('downloaded.jpg', buffer,  (err) => { if(err) console.error("Error on writefile : " + err);});
+
+      }).catch(error => console.error("ERREUR \n" + error));
+    
     } catch (error) {
       console.error("ERREUR \n" + error);
     }
-    console.log("Name : " + thumbnail.name + " | Url : " + thumbnail.url);
   });
   
-  
-  
-  console.log("fin main");
 }
+
+// Pour les vidéos ------------------------------
+//
+// Trier les posts par score
+// EN partant du meilleur ->
+//    Prendre sa durée
+//    Prendre son URL
+//    Check si on atteint la limite (%) du subreddit
+//    
 
 main();
