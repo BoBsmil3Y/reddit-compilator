@@ -1,9 +1,11 @@
 module.exports = class Media {
 
     url;
+    downloadLink;
 
-    constructor(url){
+    constructor(url, downloadLink){
         this.url = url;
+        this.downloadLink = downloadLink;
     }
 
 }
