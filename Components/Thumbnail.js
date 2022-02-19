@@ -2,8 +2,8 @@ const Media = require("./Media.js");
 
 module.exports = class Thumbnail extends Media {
 
-    constructor(url, downloadLink){
-        super(url, downloadLink);
+    constructor(url, permalink){
+        super(url, permalink);
     }
 
 }

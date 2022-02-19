@@ -1,11 +1,11 @@
 module.exports = class Media {
 
     url;
-    downloadLink;
+    permalink;
 
-    constructor(url, downloadLink){
+    constructor(url, permalink){
         this.url = url;
-        this.downloadLink = downloadLink;
+        this.permalink = permalink;
     }
 
 }

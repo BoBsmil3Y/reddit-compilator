@@ -5,8 +5,8 @@ module.exports = class Video extends Media {
     author;
     duration;
 
-    constructor(url, downloadLink, author, duration){
-        super(url, downloadLink);
+    constructor(url, permalink, author, duration){
+        super(url, permalink);
         this.author = author;
         this.duration = duration;
     }
