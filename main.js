@@ -1,47 +1,56 @@
 const RRequest = require("./model/RedditRequest.js");
 const Controller = require("./controller/Controller.js");
-const fs = require('fs');
+const Subreddit = require("./Components/Subreddit.js");
 
-//"name" = [% , minDuration, maxDuration, (TODO)miniScore] 
-const subreddit = {
-  "unexpected": [25, 4, 40],
-  "abruptchaos": [10, 10, 50],
-  "whatcouldgowrong": [25, 4, 40],
-  "facepalm": [10, 5, 30],
-  "stopworking": [5, 8, 25],
-  "AAAAAAAAAAAAAAAAA": [5, 5, 20],
-  "whyweretheyfilming": [15, 5, 50],
-  "blackmagicfuckery": [5, 8, 25]
-};
+const videoLength = 13; //In minutes
+
+const subreddits = [
+  new Subreddit("Whatcouldgowrong", 26, 4, 40),
+  
+];
+
+/*
+  new Subreddit("Unexpected", 26, 4, 40),
+  new Subreddit("AbruptChaos", 12, 10, 50),
+  new Subreddit("StoppedWorking", 5, 8, 25),
+  new Subreddit("AAAAAAAAAAAAAAAAA", 1, 2, 20),
+  new Subreddit("WhyWereTheyFilming", 15, 5, 50),
+  new Subreddit("blackmagicfuckery", 5, 8, 25)
+*/
 
 
-function main(){
-  let thumbnail;
-  RRequest.getPosts("thumbnail", "cursed_images", 50).then(data => {
+function videos(){
+
+  subreddits.forEach(subreddit => {
+
+    //(subreddit.pourcentage*20 >= 100 ? subreddit.pourcentage*20 : 100)
+    RRequest.getPosts(`${subreddit.name}'s videos`, subreddit.name, 25).then(data => {
+
+      const videos = Controller.chooseVideos(subreddit, data.children, videoLength*60);
+      videos.forEach( video => RRequest.saveMedia(video.url, true));
+
+    });
+
+  });
+
+}
+
+function thumbnail(){
+  
+  RRequest.getPosts("thumbnail", "cursed_images", 20).then(data => {
     try {
 
-      thumbnail = Controller.chooseThumbnail(data);      
-      RRequest.downloadImage(thumbnail.downloadLink).then(image => { 
-
-        const buffer = Buffer.from(image.data, 'base64');
-        fs.writeFile('downloaded.jpg', buffer,  (err) => { if(err) console.error("Error on writefile : " + err);});
-
-      }).catch(error => console.error("ERREUR \n" + error));
+      const thumbnail = Controller.chooseThumbnail(data);      
+      RRequest.saveMedia(thumbnail.url, false);
     
     } catch (error) {
       console.error("ERREUR \n" + error);
     }
+
   });
-  
+
 }
+  
 
-// Pour les vidéos ------------------------------
-//
-// Trier les posts par score
-// EN partant du meilleur ->
-//    Prendre sa durée
-//    Prendre son URL
-//    Check si on atteint la limite (%) du subreddit
-//    
-
-main();
+videos();
+thumbnail();
