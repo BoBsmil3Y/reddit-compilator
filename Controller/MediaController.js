@@ -1,11 +1,13 @@
 const Subreddit = require("../Components/Subreddit");
 const Thumbnail = require("../Components/Thumbnail");
 const Video = require("../Components/Video");
+const { exec } = require('child_process');
+
 
 const today = new Date();
 const yesterday = new Date().setDate(today.getDate() -1);
 
-module.exports = class Controller {
+module.exports = class MediaController {
     
     /**
      * Will return the image with the highest score from the 
@@ -60,6 +62,31 @@ module.exports = class Controller {
         return selected;
     }
 
+    static mergeAudioAndVideo(count){
+        let dwlPath;
+
+        for(let i = 0; i < count; i++){
+            dwlPath = `Downloads/${i}`
+
+            exec(`ffmpeg -i ${dwlPath}-video.mp4 -i ${dwlPath}-audio.mp4 -c copy -c:v libx264 -c:a aac ${dwlPath}-FINAL.mp4`, (error) => {
+                if (error) {
+                    console.error(`${i} video : Error when merging video and audio, code : ${error.code}`);
+                    return;
+                }
+                console.log(`${i} video : Merge succefully.`);
+                //TODO Gérer l'erreur si on a un fichier invalide -> lancer la suppression que pour la vidéo
+                /*
+                exec(`rm ${dwlPath}-video.mp4 ${dwlPath}-audio.mp4`, (error) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        return;
+                    }
+                });
+                */
+            });
+        }
+    }
+
 }
 
 /**
@@ -89,7 +116,7 @@ function filterVideos(subreddit, posts){
             post.media.reddit_video.duration <= subreddit.maxDuration && 
             ! post.media.reddit_video.is_gif){
                 selected.push(temp);
-        } // post.media.reddit_video.height >= 720 && 
+        }
     });
 
     return selected;

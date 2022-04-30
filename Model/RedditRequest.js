@@ -15,9 +15,9 @@ module.exports = class RedditRequest {
      */
     static getPosts(subject, subreddit, limit){
         const data = axios
-                    .get(`https://www.reddit.com/r/${subreddit}/new.json?limit=${limit}`)
-                    .then(res => res.data.data)
-                    .catch(error => console.error(`Error on the ${subject} request \n${error}`));
+                        .get(`https://www.reddit.com/r/${subreddit}/new.json?limit=${limit}`)
+                        .then(res => res.data.data)
+                        .catch(error => console.error(`Error on the ${subject} request \n${error}`));
 
         return data;
     }
@@ -25,24 +25,43 @@ module.exports = class RedditRequest {
     /**
      * Download the media with the URL given.
      * @param {String}  mediaURL The URL of the thumbnail
-     * @param {Boolean} isVideo s True if it's a video
+     * @param {Boolean} isVideo  True if it's a video
      */
     static saveMedia(mediaURL, isVideo){
 
-        const fileName = " " + this.count;
-        const localFilePath = path.resolve(__dirname, "../Downloads", (isVideo ? fileName+".mp4" : fileName));
+        return new Promise( (resolve, reject) => {
+            const fileName = `${this.count}`;
+            const localVideoFilePath = path.resolve(__dirname, "../Downloads", (isVideo ? fileName+"-video.mp4" : fileName));
+            const localAudioFilePath = path.resolve(__dirname, "../Downloads", (isVideo ? fileName+"-audio.mp4" : fileName));
 
-        this.count++;
-
-        try {
+            // Get video or image data.
             axios
                 .get(mediaURL, {responseType: 'stream'})
-                .then(res => res.data.pipe(fs.createWriteStream(localFilePath)))
-                .catch(err => console.error(err));
+                .then(res => {
+                    res.data.pipe(fs.createWriteStream(localVideoFilePath));
+                    
+                    // Get audio data if it's a video.
+                    if(isVideo){
+                        axios
+                            .get(mediaURL.replace(/DASH_[0-9]+/, "DASH_audio"), {responseType: 'stream'})
+                            .then(res => {
+                                res.data.pipe(fs.createWriteStream(localAudioFilePath))
+                                        .on('finish', (err) => {
+                                            if (err) reject(err);
+                                            else resolve(this.count);
+                                        })
+                                resolve
+                            })
+                            .catch(err => console.error(`Code : ${err.response.status}, message : ${err.response.statusText}, path : ${err.request.path}`));
+                    }
 
-        } catch (err) {
-            throw `Error on the ${fileName} request \n${error}`;
-        }
+                })
+                .catch(err => console.error(`Code : ${err.response.status}, message : ${err.response.statusText}, path : ${err.request.path}`));
+
+            
+            
+            this.count++;
+        } )
     }
 
 }
