@@ -8,32 +8,38 @@ const today = new Date();
 const yesterday = new Date().setDate(today.getDate() -1);
 
 module.exports = class MediaController {
-    
+
     /**
-     * Will return the image with the highest score from the 
+     * Will return 3 images with the highest score from the
      * given list. It will not take image that are NSWF, a video,
-     * pinned, or has been removed.
+     * pinned, or has been removed by mods.
      * @param  {Array<String>} posts A list of Reddit posts
-     * @return {Thumbnail}           The best image from the list
+     * @return {Array<Thumbnail>} The three best images from the list
      */
     static chooseThumbnail(posts){
-        let permalink = "", url, score = 0;
+        let thumbnails = [];
+        let post, count = 0;
 
-        for(let image of posts.children){
-            const data = image.data;
-            
-            if(! isFromToday(data.created)) break;
-            
-            if(! data.over_18 && data.score > score && ! data.is_video && ! data.title.includes("Removed by reddit") && ! data.pinned){
-                score = data.score;
-                url = data.url;
-                permalink = data.permalink;
-            }
+        posts.children.sort((a, b) => a.data.score - b.data.score);
+
+        while(count < 2 && posts.children.length > 0){
+
+            post = posts.children.pop();
+            post = post.data;
+
+            console.log(post)
+            console.log("check")
+//            if(! isFromToday(post.created) && ! post.over_18 && ! post.is_video && ! post.title.includes("Removed by reddit") && ! post.pinned)
+//                break;
+
+            console.log("tout bon")
+            thumbnails.push(new Thumbnail(post.url, post.permalink));
+            count++;
         }
 
-        if(permalink === "") throw "No thumbnail found for today";
+        if(thumbnails.length == 0) throw "No thumbnail found for today";
 
-        return new Thumbnail(url, permalink);
+        return thumbnails;
     }
 
     /**
@@ -65,12 +71,13 @@ module.exports = class MediaController {
     static mergeAudioAndVideo(count){
         let dwlPath;
 
-        for(let i = 0; i < count; i++){
+        for(let i = 1; i < count; i++){
             dwlPath = `Downloads/${i}`
 
             exec(`ffmpeg -i ${dwlPath}-video.mp4 -i ${dwlPath}-audio.mp4 -c copy -c:v libx264 -c:a aac ${dwlPath}-FINAL.mp4`, (error) => {
                 if (error) {
                     console.error(`${i} video : Error when merging video and audio, code : ${error.code}`);
+                    console.error(error.message);
                     return;
                 }
                 console.log(`${i} video : Merge succefully.`);
@@ -99,7 +106,7 @@ function isFromToday(theDate){
 
 /**
  * Will return all the valid videos from the given array of posts.
- * @param   {Array<Subreddit>} subreddit The subreddit object to take infos from 
+ * @param   {Array<Subreddit>} subreddit The subreddit object to take infos from
  * @param   {Array<Object>}    posts     The array of posts to check
  * @returns {Array<Object>}              The array of posts that are valid
  */
@@ -108,12 +115,12 @@ function filterVideos(subreddit, posts){
 
     posts.forEach(temp => {
         const post = temp.data;
-        
-        if(post.is_video && 
-            ! post.over_18 && 
+
+        if(post.is_video &&
+            ! post.over_18 &&
             ! isFromToday(post.created) &&
-            post.media.reddit_video.duration >= subreddit.minDuration  && 
-            post.media.reddit_video.duration <= subreddit.maxDuration && 
+            post.media.reddit_video.duration >= subreddit.minDuration  &&
+            post.media.reddit_video.duration <= subreddit.maxDuration &&
             ! post.media.reddit_video.is_gif){
                 selected.push(temp);
         }
