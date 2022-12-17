@@ -5,7 +5,7 @@ const Subreddit = require("./Components/Subreddit.js");
 /** Length of the wanted compilation video in minute. */
 const videoLength = 13;
 
-/** 
+/**
  * The list of subreddit to take videos from.
  * Args : Name, % of time in the video, minimun duration, maximum duration.
  */
@@ -19,6 +19,52 @@ const subreddits = [
   new Subreddit("Whatcouldgowrong", 26, 4, 40)
 ];
 
+
+/**
+ * Will launch the search and download of all videos. (async try)
+ */
+
+async function processVideo(videoList) {
+
+    for(const video of videoList){
+        RRequest.saveMedia(video.url, true)
+              .then(count => MediaController.mergeAudioAndVideo(count))
+                .catch(e => console.error(`Error occured during merge : ${e}`))
+
+        const count = await RRequest.saveMedia(video.url, true)
+
+        try {
+            await MediaController.mergeAudioAndVideo(count);
+        } catch (e) {
+            console.error(`Error occured during merge : ${e}`);
+        }
+    }
+
+}
+
+async function videosAsync() {
+
+    let videos = [];
+
+    for(const subreddit of subreddits){
+
+        //(subreddit.pourcentage*20 >= 100 ? subreddit.pourcentage*20 : 100)
+        const posts = await RRequest.getPostsAsync(`${subreddit.name}'s videos`, subreddit.name, 100);
+
+        videos.push(MediaController.chooseVideos(subreddit, posts.children, videoLength*60));
+        console.log("fini requête")
+    }
+
+    // Run async tasks with a concurrency limit of 3
+    console.log("debut video")
+    const workers = new Array(3).fill(videos).map(processVideo);
+    console.log("fin video")
+
+    // Wait until all tasks are done
+    await Promise.allSettled(workers);
+    console.log("subreddit post finished")
+}
+
 /**
  * Will launch the search and download of all videos.
  */
@@ -27,18 +73,18 @@ function videos(){
   subreddits.forEach(subreddit => {
 
     //(subreddit.pourcentage*20 >= 100 ? subreddit.pourcentage*20 : 100)
-    RRequest.getPosts(`${subreddit.name}'s videos`, subreddit.name, 200).then(data => {
+    RRequest.getPosts(`${subreddit.name}'s videos`, subreddit.name, 100).then(data => {
 
       const videos = MediaController.chooseVideos(subreddit, data.children, videoLength*60);
       console.log("Vidéos à télécharger = " + videos.length);
-      
+
       videos.forEach( video => {
         RRequest.saveMedia(video.url, true)
-          .then(count => {
-            setTimeout(() => {
-              MediaController.mergeAudioAndVideo(count);
-            }, 1500);
-          });
+//          .then(count => {
+//            setTimeout(() => {
+//              MediaController.mergeAudioAndVideo(count);
+//            }, 1500);
+//          });
       });
 
     });
@@ -52,13 +98,13 @@ function videos(){
  */
 // TODO Maybe add a request to `cursedimages` as a backup plan
 function thumbnail(){
-  
+
   RRequest.getPosts("thumbnail", "cursed_images", 40).then(data => {
     try {
 
-      const thumbnail = MediaController.chooseThumbnail(data);      
-      RRequest.saveMedia(thumbnail.url, false);
-    
+      const thumbnail = MediaController.chooseThumbnail(data);
+      RRequest.saveThumbnail(thumbnail.url);
+
     } catch (error) {
       console.error("ERREUR \n" + error);
     }
@@ -68,11 +114,48 @@ function thumbnail(){
 }
 
 /**
+ * Will download the image of the day with the highest score from the subreddit 'cursed_images'.
+ */
+// TODO Maybe add a request to `cursedimages` as a backup plan
+async function thumbnailAsync(){
+    let thumbnail = null;
+
+    const images = await RRequest.getPostsAsync("thumbnail", "cursed_images", 40);
+    let thumbnails;
+
+    try {
+        thumbnails = await MediaController.chooseThumbnail(images);
+    } catch (e) {
+        console.error(e)
+    }
+
+    if(thumbnails == null)
+        return;
+
+    console.log(thumbnails.length)
+
+    while(thumbnail == null && thumbnails.length > 0){
+        thumbnail = thumbnails.pop();
+
+        try {
+
+            await RRequest.saveThumbnail(thumbnail.url);
+
+        } catch (error) {
+            console.error("ERREUR \n" + error);
+            thumbnail = null;
+        }
+
+    }
+}
+
+/**
  * Launch the whole process asynchonous.
  */
 function downloadMedias(){
-  thumbnail();
-  videos();
+//    videosAsync();
+    thumbnailAsync();
+//    videos();
 }
 
 downloadMedias();
