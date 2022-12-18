@@ -72,30 +72,20 @@ module.exports = class MediaController {
         return selected;
     }
 
-    static mergeAudioAndVideo(count){
-        let dwlPath;
+    static merge(number){
 
-        for(let i = 1; i < count; i++){
-            dwlPath = `Downloads/${i}`
+        const dwlPath = `Downloads/${number}`
 
-            exec(`ffmpeg -i ${dwlPath}-video.mp4 -i ${dwlPath}-audio.mp4 -c copy -c:v libx264 -c:a aac ${dwlPath}-FINAL.mp4`, (error) => {
-                if (error) {
-                    console.error(`${i} video : Error when merging video and audio, code : ${error.code}`);
-                    console.error(error.message);
-                    return;
-                }
-                console.log(`${i} video : Merge succefully.`);
-                //TODO Gérer l'erreur si on a un fichier invalide -> lancer la suppression que pour la vidéo
-                /*
-                exec(`rm ${dwlPath}-video.mp4 ${dwlPath}-audio.mp4`, (error) => {
-                    if (error) {
-                        console.error(`exec error: ${error}`);
-                        return;
-                    }
-                });
-                */
-            });
-        }
+        exec(`ffmpeg -i ${dwlPath}-video.mp4 -i ${dwlPath}-audio.mp4 -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 ${dwlPath}-FINAL.mp4`, (error) => { //libx264
+            if (error) {
+
+                console.error(`${number} -> Error when merging video and audio, code : ${error.code}`);
+                //console.error(error.message);
+                return;
+            }
+
+            console.log(`${number} -> Merge succefully.`);
+        });
     }
 
 }
