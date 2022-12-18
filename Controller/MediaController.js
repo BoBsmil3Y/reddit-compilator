@@ -50,13 +50,9 @@ module.exports = class MediaController {
         const pourcentage = (subreddit.pourcentage/100)*videoLength;
 
         filtered = filterVideos(subreddit, posts);
-        filtered.sort((a, b) => a.data.score - b.data.score);
+        filtered.sort((a, b) => b.data.score - a.data.score);
 
-        //TESTER SI C'EST BIEN TRIE
-        for (let i = 0; i < posts.children.length; i++)
-            console.log(posts.children[i].data.score)
-
-        for(let i = filtered.length-1; i >= 0; i--){
+        for(let i = 0; i < filtered.length; i++){
             if(sum >= pourcentage) break;
 
             sum += filtered[i].data.media.reddit_video.duration;

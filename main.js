@@ -97,42 +97,15 @@ function videos(){
  * Will download the image of the day with the highest score from the subreddit 'cursed_images'.
  */
 // TODO Maybe add a request to `cursedimages` as a backup plan
-function thumbnail(){
-
-  RRequest.getPosts("thumbnail", "cursed_images", 40).then(data => {
-    try {
-
-      const thumbnail = MediaController.chooseThumbnail(data);
-      RRequest.saveThumbnail(thumbnail.url);
-
-    } catch (error) {
-      console.error("ERREUR \n" + error);
-    }
-
-  });
-
-}
-
-/**
- * Will download the image of the day with the highest score from the subreddit 'cursed_images'.
- */
-// TODO Maybe add a request to `cursedimages` as a backup plan
 async function thumbnailAsync(){
-    let thumbnail = null;
-
-    const images = await RRequest.getPostsAsync("thumbnail", "cursed_images", 40);
-    let thumbnails;
+    let thumbnail = null, thumbnails = [], images = [];
 
     try {
+        images = await RRequest.getPostsAsync("thumbnail", "cursed_images", 40);
         thumbnails = await MediaController.chooseThumbnail(images);
     } catch (e) {
         console.error(e)
     }
-
-    if(thumbnails == null)
-        return;
-
-    console.log(thumbnails.length)
 
     while(thumbnail == null && thumbnails.length > 0){
         thumbnail = thumbnails.pop();
@@ -142,7 +115,6 @@ async function thumbnailAsync(){
             await RRequest.saveThumbnail(thumbnail.url);
 
         } catch (error) {
-            console.error("ERREUR \n" + error);
             thumbnail = null;
         }
 
@@ -155,7 +127,7 @@ async function thumbnailAsync(){
 function downloadMedias(){
 //    videosAsync();
     thumbnailAsync();
-//    videos();
+    videos();
 }
 
 downloadMedias();
