@@ -26,7 +26,8 @@ module.exports = class MediaController {
             post = posts.children.shift();
             post = post.data;
 
-            if(! isFromToday(post.created) && ! post.over_18 && ! post.is_video && ! post.title.includes("Removed by reddit") && ! post.pinned)
+            if(! isFromToday(post.created) || post.over_18 || post.is_video
+                || post.title.includes("Removed by reddit") || post.pinned)
                 continue;
 
             thumbnails.push(new Thumbnail(post.url, post.permalink));
@@ -46,20 +47,28 @@ module.exports = class MediaController {
      * @return {Array<Video>}              A list of the best videos from the list
      */
     static chooseVideos(subreddit, posts, videoLength){
-        let sum = 0, filtered = [], selected = [];
+        let sum = 0, post, selected = [];
         const pourcentage = (subreddit.pourcentage/100)*videoLength;
 
-        filtered = filterVideos(subreddit, posts);
-        filtered.sort((a, b) => b.data.score - a.data.score);
+        const filtered = posts.sort((a, b) => b.data.score - a.data.score);
 
-        for(let i = 0; i < filtered.length; i++){
-            if(sum >= pourcentage) break;
+        while(sum <= pourcentage && filtered.length > 0){
 
-            sum += filtered[i].data.media.reddit_video.duration;
-            selected.push(new Video(filtered[i].data.media.reddit_video.fallback_url));
+            post = filtered.shift();
+            post = post.data;
+
+            if(! post.is_video || post.over_18 || ! isFromToday(post.created) ||
+                post.media.reddit_video.duration <= subreddit.minDuration  ||
+                post.media.reddit_video.duration >= subreddit.maxDuration ||
+                post.media.reddit_video.is_gif || post.title.includes("Removed by reddit")
+                || post.pinned)
+                continue;
+
+            sum += post.media.reddit_video.duration;
+            selected.push(new Video(post.media.reddit_video.fallback_url));
         }
-        console.log("Subreddit : " + subreddit.name + " Durée totale : " + sum + ", soit " + (sum/videoLength)*100 + "% sur " + subreddit.pourcentage + "% demandés");
 
+        console.log(subreddit.name + " : (durée totale) " + sum + "s, soit " + (sum/videoLength)*100 + "% sur " + subreddit.pourcentage + "% demandés");
         return selected;
     }
 
@@ -97,29 +106,4 @@ module.exports = class MediaController {
  */
 function isFromToday(theDate){
     return (theDate*1000) > yesterday;
-}
-
-/**
- * Will return all the valid videos from the given array of posts.
- * @param   {Array<Subreddit>} subreddit The subreddit object to take infos from
- * @param   {Array<Object>}    posts     The array of posts to check
- * @returns {Array<Object>}              The array of posts that are valid
- */
-function filterVideos(subreddit, posts){
-    let selected = [];
-
-    posts.forEach(temp => {
-        const post = temp.data;
-
-        if(post.is_video &&
-            ! post.over_18 &&
-            ! isFromToday(post.created) &&
-            post.media.reddit_video.duration >= subreddit.minDuration  &&
-            post.media.reddit_video.duration <= subreddit.maxDuration &&
-            ! post.media.reddit_video.is_gif){
-                selected.push(temp);
-        }
-    });
-
-    return selected;
 }
