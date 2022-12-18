@@ -17,24 +17,19 @@ module.exports = class MediaController {
      * @return {Array<Thumbnail>} The three best images from the list
      */
     static chooseThumbnail(posts){
-        let thumbnails = [];
-        let post, count = 0;
+        let thumbnails = [], post;
 
-        posts.children.sort((a, b) => a.data.score - b.data.score);
+        posts.children.sort((a, b) => b.data.score - a.data.score);
 
-        while(count < 2 && posts.children.length > 0){
+        while(thumbnails.length < 3 && posts.children.length > 0){
 
-            post = posts.children.pop();
+            post = posts.children.shift();
             post = post.data;
 
-            console.log(post)
-            console.log("check")
-//            if(! isFromToday(post.created) && ! post.over_18 && ! post.is_video && ! post.title.includes("Removed by reddit") && ! post.pinned)
-//                break;
+            if(! isFromToday(post.created) && ! post.over_18 && ! post.is_video && ! post.title.includes("Removed by reddit") && ! post.pinned)
+                continue;
 
-            console.log("tout bon")
             thumbnails.push(new Thumbnail(post.url, post.permalink));
-            count++;
         }
 
         if(thumbnails.length == 0) throw "No thumbnail found for today";
@@ -56,6 +51,10 @@ module.exports = class MediaController {
 
         filtered = filterVideos(subreddit, posts);
         filtered.sort((a, b) => a.data.score - b.data.score);
+
+        //TESTER SI C'EST BIEN TRIE
+        for (let i = 0; i < posts.children.length; i++)
+            console.log(posts.children[i].data.score)
 
         for(let i = filtered.length-1; i >= 0; i--){
             if(sum >= pourcentage) break;
