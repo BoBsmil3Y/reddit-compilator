@@ -10,88 +10,37 @@ const videoLength = 13;
  * Args : Name, % of time in the video, minimun duration, maximum duration.
  */
 const subreddits = [
-  new Subreddit("Unexpected", 26, 4, 40),
-  new Subreddit("AbruptChaos", 12, 10, 50),
+  new Subreddit("Unexpected", 15, 4, 40),
+  new Subreddit("AbruptChaos", 15, 10, 50),
   new Subreddit("StoppedWorking", 5, 8, 25),
-  new Subreddit("AAAAAAAAAAAAAAAAA", 1, 2, 20),
-  new Subreddit("WhyWereTheyFilming", 15, 5, 50),
-  new Subreddit("blackmagicfuckery", 5, 8, 25),
-  new Subreddit("Whatcouldgowrong", 26, 4, 40)
+  new Subreddit("AAAAAAAAAAAAAAAAA", 5, 2, 20),
+  new Subreddit("WhyWereTheyFilming", 5, 5, 50),
+  new Subreddit("Whatcouldgowrong", 25, 4, 40),
+  new Subreddit("perfectlycutscreams", 20, 3, 30),
+  new Subreddit("funny", 10, 5, 30)
 ];
 
 
 /**
- * Will launch the search and download of all videos. (async try)
+ * Will launch the search, download and merged of videos.
  */
-
-async function processVideo(videoList) {
-
-    for(const video of videoList){
-        RRequest.saveMedia(video.url, true)
-              .then(count => MediaController.mergeAudioAndVideo(count))
-                .catch(e => console.error(`Error occured during merge : ${e}`))
-
-        const count = await RRequest.saveMedia(video.url, true)
-
-        try {
-            await MediaController.mergeAudioAndVideo(count);
-        } catch (e) {
-            console.error(`Error occured during merge : ${e}`);
-        }
-    }
-
-}
-
 async function videosAsync() {
 
     let videos = [];
 
     for(const subreddit of subreddits){
-
         //(subreddit.pourcentage*20 >= 100 ? subreddit.pourcentage*20 : 100)
-        const posts = await RRequest.getPostsAsync(`${subreddit.name}'s videos`, subreddit.name, 100);
+        const posts = await RRequest.getPostsAsync(`${subreddit.name}'s videos`, subreddit.name, 150);
 
-        videos.push(MediaController.chooseVideos(subreddit, posts.children, videoLength*60));
-        console.log("fini requête")
+        videos = videos.concat(MediaController.chooseVideos(subreddit, posts.children, videoLength*60));
     }
+    //shuffleArray(videos);
 
-    // Run async tasks with a concurrency limit of 3
-    console.log("debut video")
-    const workers = new Array(3).fill(videos).map(processVideo);
-    console.log("fin video")
-
-    // Wait until all tasks are done
-    await Promise.allSettled(workers);
-    console.log("subreddit post finished")
-}
-
-/**
- * Will launch the search and download of all videos.
- */
-function videos(){
-
-  subreddits.forEach(subreddit => {
-
-    //(subreddit.pourcentage*20 >= 100 ? subreddit.pourcentage*20 : 100)
-    RRequest.getPosts(`${subreddit.name}'s videos`, subreddit.name, 100).then(data => {
-
-      const videos = MediaController.chooseVideos(subreddit, data.children, videoLength*60);
-      console.log("Vidéos à télécharger = " + videos.length);
-
-      videos.forEach( video => {
-        RRequest.saveMedia(video.url, true)
-//          .then(count => {
-//            setTimeout(() => {
-//              MediaController.mergeAudioAndVideo(count);
-//            }, 1500);
-//          });
-      });
-
-    });
-
-  });
+    for(const video of videos)
+        RRequest.saveVideo(video.url, true)
 
 }
+
 
 /**
  * Will download the image of the day with the highest score from the subreddit 'cursed_images'.
@@ -120,14 +69,22 @@ async function thumbnailAsync(){
 
     }
 }
+function shuffleArray(array) {
+    let i,j,temp, size =  array.length;
+    for (i = size- 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
 
 /**
  * Launch the whole process asynchonous.
  */
 function downloadMedias(){
-//    videosAsync();
     thumbnailAsync();
-    videos();
+    videosAsync();
 }
 
 downloadMedias();

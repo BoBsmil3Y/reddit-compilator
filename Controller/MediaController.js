@@ -76,11 +76,10 @@ module.exports = class MediaController {
 
         const dwlPath = `Downloads/${number}`
 
-        exec(`ffmpeg -i ${dwlPath}-video.mp4 -i ${dwlPath}-audio.mp4 -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 ${dwlPath}-FINAL.mp4`, (error) => { //libx264
+        exec(`ffmpeg -i ${dwlPath}-video.mp4 -i ${dwlPath}-audio.mp4 -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 ${dwlPath}-FINAL.mp4`, (error) => {
             if (error) {
-
-                console.error(`${number} -> Error when merging video and audio, code : ${error.code}`);
-                //console.error(error.message);
+                //console.error(`${number} -> Error when merging video and audio, code : ${error.code}`);
+                console.error(error.message);
                 return;
             }
 
