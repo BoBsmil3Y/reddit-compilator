@@ -7,14 +7,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Media {
 
-    private String title;
-    private String author;
-    private String url;
-    private String permaLink;
+    private final String title;
+    private final String author;
+    private final String url;
+    private final String permaLink;
 
 }

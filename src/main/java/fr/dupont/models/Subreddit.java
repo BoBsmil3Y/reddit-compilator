@@ -1,10 +1,15 @@
 package fr.dupont.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public class Subreddit {
 
-    private String name;
-    private Float pourcentage;
-    private int minDurationSeconds;
-    private int maxDurationSeconds;
+    private final String name;
+    private final Float pourcentage;
+    private final int minDurationSeconds;
+    private final int maxDurationSeconds;
 
 }
