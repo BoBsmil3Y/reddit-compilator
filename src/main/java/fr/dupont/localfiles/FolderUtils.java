@@ -14,29 +14,35 @@ public class FolderUtils {
 
     /**
      * Create a folder if it doesn't exist.
-     * @param folderPath The path of the folder to create.
+     * @param itemPath The path of the folder to create.
+     * @param isFile Distinction between file and folder.
      */
-    public static void createFolder(String folderPath) {
+    public static void createLocalFile(String itemPath, boolean isFile) {
 
         ColorLogger logger = new ColorLogger();
 
         try {
 
-            Path path = Paths.get(folderPath);
-            if (Files.exists(path))
+            Path path = Paths.get(itemPath);
+            if (Files.exists(path)) {
+                logger.print(ColorLogger.Level.INFO, String.format("Directory %s was found.", itemPath));
                 return;
+            }
 
-            Files.createDirectories(path);
-            logger.print(ColorLogger.Level.SUCCESS, "Directory is created!");
+            logger.print(ColorLogger.Level.INFO, String.format("Item %s not found, creating it ...", itemPath));
+            if (isFile)
+                Files.createFile(path);
+            else
+                Files.createDirectory(path);
+
+            logger.print(ColorLogger.Level.SUCCESS, String.format("Item %s created!", itemPath));
 
         } catch (IOException e) {
 
-            logger.print(ColorLogger.Level.ERROR,"Failed to create directory! \nShutting down the program.\n" + e.getMessage() );
+            logger.print(ColorLogger.Level.ERROR, String.format("Failed to create %s !%nShutting down the program.%n%s", itemPath, e.getMessage()));
             System.exit(1);
 
         }
-
-        logger.print(ColorLogger.Level.INFO, "Directory " + folderPath +  " already exists.");
 
     }
 
