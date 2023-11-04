@@ -1,12 +1,7 @@
 package fr.dupont.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.List;
 
-@Getter
-@AllArgsConstructor
 public record Compilation(List<Video> videos, Thumbnail thumbnail) {
 
     public Float getDuration() {
