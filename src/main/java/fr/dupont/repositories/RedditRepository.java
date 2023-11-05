@@ -2,8 +2,12 @@ package fr.dupont.repositories;
 
 import fr.dupont.ColorLogger;
 import fr.dupont.models.Subreddit;
+import fr.dupont.models.Video;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -27,14 +31,14 @@ public class RedditRepository {
      * @param subreddit The subreddit to get the top videos from.
      * @return The response body of the request.
      */
-    public String getTopVideosOfASub(Subreddit subreddit) {
+    public String getTopVideoListOfASub(Subreddit subreddit) {
         int count = 0;
 
         while (count < REQUEST_ATTEMPT) {
 
             try {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(String.format("https://www.reddit.com/r/%s/top.json?sort=top&t=day&limit=100&limit=%s", subreddit.name(), MAX_VIDEOS_PER_SUBREDDIT)))
+                        .uri(URI.create(String.format("https://www.reddit.com/r/%s/top.json?sort=top&t=day&limit=%s", subreddit.name(), MAX_VIDEOS_PER_SUBREDDIT)))
                         .header("accept", "application/json")
                         .timeout(Duration.of(5, SECONDS))
                         .GET()
@@ -52,6 +56,56 @@ public class RedditRepository {
         }
 
         throw new RuntimeException("Failed to get top videos of " + subreddit.name());
+    }
+
+    public void getVideo(Video video) throws RuntimeException {
+        int requestCount = 0;
+        final String url = video.getUrl();
+        final String path = String.format("./output/downloaded/%s.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
+
+        OutputStream output = null;
+        InputStream input;
+
+        while (requestCount < REQUEST_ATTEMPT) {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .timeout(Duration.of(5, SECONDS))
+                        .GET()
+                        .build();
+
+                HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                input = response.body();
+                output = new FileOutputStream(path);
+                byte data[] = new byte[4096];
+                int count;
+
+                while ((count = response.body().read(data)) != -1) {
+                    output.write(data, 0, count);
+                }
+
+
+                logger.print(ColorLogger.Level.INFO, String.format("Response code: %s", response.statusCode()));
+
+                if (response.body() != null)
+                    input.close();
+
+                return;
+
+            } catch (IOException | InterruptedException e) {
+                logger.print(ColorLogger.Level.ERROR, String.format("Failed to get video %s ! Retrying ... %n%s", video.getTitle(), e.getMessage()));
+                requestCount++;
+            } finally {
+                try {
+                    if (output != null)
+                        output.close();
+
+                } catch (IOException ignored) { }
+
+            }
+        }
+
+        throw new RuntimeException(String.format("Failed to get the video named %s with url : %s", video.getTitle(), video.getUrl()));
     }
 
 }
