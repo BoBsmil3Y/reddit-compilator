@@ -1,5 +1,6 @@
 package fr.dupont;
 
+import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.localfiles.FolderUtils;
 import fr.dupont.models.MediaFormat;
 import fr.dupont.models.Subreddit;
@@ -38,7 +39,14 @@ public class Main {
         RedditRepository redditRepository = new RedditRepository();
         System.out.println(redditRepository.getTopVideoListOfASub(subreddits.get(0)));
 
-        redditRepository.getVideo(new Video("test", "test", "https://v.redd.it/rnmzllmjihyb1/DASH_360.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F));
+        Video video = new Video("test", "test", "https://v.redd.it/rnmzllmjihyb1/DASH_360.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F, "https://v.redd.it/rnmzllmjihyb1/DASH_audio.mp4?source=fallback");
+        Video video2 = new Video("test", "test", "https://v.redd.it/rnmzllmjihyb1/DASH_audio.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F, "https://v.redd.it/rnmzllmjihyb1/DASH_audio.mp4?source=fallback");
+        try {
+            redditRepository.getVideo(video);
+            redditRepository.getVideo(video2);
+        } catch (FailedToRetrievedMedia e) {
+            throw new RuntimeException(e);
+        }
 
 
     }
