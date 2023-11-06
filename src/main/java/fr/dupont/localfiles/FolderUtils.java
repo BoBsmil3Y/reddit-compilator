@@ -4,6 +4,7 @@ import fr.dupont.ColorLogger;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,10 +25,13 @@ public class FolderUtils {
         try {
 
             Path path = Paths.get(itemPath);
+
             if (Files.exists(path)) {
                 logger.print(ColorLogger.Level.INFO, String.format("Directory %s was found.", itemPath));
                 return;
             }
+
+            Files.createDirectories(path.getParent());
 
             logger.print(ColorLogger.Level.INFO, String.format("Item %s not found, creating it ...", itemPath));
             if (isFile)
