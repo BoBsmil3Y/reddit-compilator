@@ -1,6 +1,7 @@
 package fr.dupont.repositories;
 
 import fr.dupont.ColorLogger;
+import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.models.Subreddit;
 import fr.dupont.models.Video;
 
@@ -58,54 +59,54 @@ public class RedditRepository {
         throw new RuntimeException("Failed to get top videos of " + subreddit.name());
     }
 
-    public void getVideo(Video video) throws RuntimeException {
+    public void getVideo(Video video) throws FailedToRetrievedMedia {
         int requestCount = 0;
-        final String url = video.getUrl();
         final String path = String.format("./output/downloaded/%s.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
 
         OutputStream output = null;
-        InputStream input;
+        InputStream input = null;
 
         while (requestCount < REQUEST_ATTEMPT) {
             try {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(url))
+                        .uri(URI.create(video.getUrl()))
                         .timeout(Duration.of(5, SECONDS))
                         .GET()
                         .build();
 
                 HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+                if (response.statusCode() != 200)
+                    throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), response.statusCode());
+
                 input = response.body();
                 output = new FileOutputStream(path);
-                byte data[] = new byte[4096];
+                byte[] data = new byte[4096];
                 int count;
 
-                while ((count = response.body().read(data)) != -1) {
+                while ((count = input.read(data)) != -1) {
                     output.write(data, 0, count);
                 }
 
-
-                logger.print(ColorLogger.Level.INFO, String.format("Response code: %s", response.statusCode()));
-
-                if (response.body() != null)
-                    input.close();
-
+                logger.print(ColorLogger.Level.SUCCESS, String.format("Video retrieved → %s", video.getTitle()));
                 return;
 
             } catch (IOException | InterruptedException e) {
-                logger.print(ColorLogger.Level.ERROR, String.format("Failed to get video %s ! Retrying ... %n%s", video.getTitle(), e.getMessage()));
+                logger.print(ColorLogger.Level.ERROR, String.format("Failed to get video → %s! Retrying ... %n%s", video.getTitle(), e.getMessage()));
                 requestCount++;
             } finally {
                 try {
                     if (output != null)
                         output.close();
+                    if (input != null)
+                        input.close();
 
                 } catch (IOException ignored) { }
 
             }
         }
 
-        throw new RuntimeException(String.format("Failed to get the video named %s with url : %s", video.getTitle(), video.getUrl()));
+        throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl());
     }
 
 }
