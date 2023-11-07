@@ -6,8 +6,8 @@ public class FailedToRetrievedMedia extends Exception {
         super(String.format("Failed to retrieve media %s with URL : %s. %nResponse code: %s", title, url, responseCode));
     }
 
-    public FailedToRetrievedMedia(String title, String url) {
-        super(String.format("Failed to retrieve media %s with URL : %s.", title, url));
+    public FailedToRetrievedMedia(String url) {
+        super(String.format("Failed to retrieve media with URL : %s.", url));
     }
 
 }

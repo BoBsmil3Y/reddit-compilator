@@ -39,13 +39,16 @@ public class Main {
         RedditRepository redditRepository = new RedditRepository();
         System.out.println(redditRepository.getTopVideoListOfASub(subreddits.get(0)));
 
-        Video video = new Video("test", "test", "https://v.redd.it/rnmzllmjihyb1/DASH_360.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F, "https://v.redd.it/rnmzllmjihyb1/DASH_audio.mp4?source=fallback");
-        Video video2 = new Video("test", "test", "https://v.redd.it/rnmzllmjihyb1/DASH_audio.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F, "https://v.redd.it/rnmzllmjihyb1/DASH_audio.mp4?source=fallback");
+        Video video = new Video("test", "test", "https://v.redd.it/a6nksmh0wqyb1/DASH_720.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F);
         try {
             redditRepository.getVideo(video);
-            redditRepository.getVideo(video2);
+            redditRepository.getAudio(video);
         } catch (FailedToRetrievedMedia e) {
             throw new RuntimeException(e);
+        } finally {
+
+            //Delete both files
+
         }
 
 

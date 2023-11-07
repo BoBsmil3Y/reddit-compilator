@@ -60,24 +60,54 @@ public class RedditRepository {
     }
 
     public void getVideo(Video video) throws FailedToRetrievedMedia {
-        int requestCount = 0;
+        int responseCode = 0;
         final String path = String.format("./output/downloaded/%s.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
 
+        responseCode = requestMedia(video.getUrl(), path);
+
+        if (responseCode != 200)
+            throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), responseCode);
+    }
+
+    public void getAudio(Video video) throws FailedToRetrievedMedia {
+        final String path = String.format("./output/downloaded/%s-audio.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
+        final String[] suffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
+        int responseCode = 0;
+
+        for(int i = 0; i < suffixes.length; i++){
+            String url = video.getUrl()
+                            .replaceAll("DASH_[0-9]+", suffixes[i])
+                            .replace("?source=fallback", "");
+            responseCode = requestMedia(url, path);
+            if (responseCode == 200)
+                return;
+        }
+
+        throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), responseCode);
+    }
+
+    private int requestMedia(String url, String path) {
+        int requestCount = 0;
         OutputStream output = null;
         InputStream input = null;
+        HttpResponse<InputStream> response;
 
         while (requestCount < REQUEST_ATTEMPT) {
+
             try {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(video.getUrl()))
+                        .uri(URI.create(url))
                         .timeout(Duration.of(5, SECONDS))
                         .GET()
                         .build();
 
-                HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+                if (response.statusCode() > 400  && response.statusCode() < 408)
+                    return response.statusCode();
 
                 if (response.statusCode() != 200)
-                    throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), response.statusCode());
+                    continue;
 
                 input = response.body();
                 output = new FileOutputStream(path);
@@ -88,11 +118,11 @@ public class RedditRepository {
                     output.write(data, 0, count);
                 }
 
-                logger.print(ColorLogger.Level.SUCCESS, String.format("Video retrieved → %s", video.getTitle()));
-                return;
+                logger.print(ColorLogger.Level.SUCCESS, String.format("Media retrieved → %s", url));
+                return response.statusCode();
 
             } catch (IOException | InterruptedException e) {
-                logger.print(ColorLogger.Level.ERROR, String.format("Failed to get video → %s! Retrying ... %n%s", video.getTitle(), e.getMessage()));
+                logger.print(ColorLogger.Level.ERROR, String.format("Failed to get media → %s! Retrying ... %n%s", url, e.getMessage()));
                 requestCount++;
             } finally {
                 try {
@@ -102,11 +132,11 @@ public class RedditRepository {
                         input.close();
 
                 } catch (IOException ignored) { }
-
             }
+
         }
 
-        throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl());
+        return -1;
     }
 
 }
