@@ -59,6 +59,11 @@ public class RedditRepository {
         throw new RuntimeException("Failed to get top videos of " + subreddit.name());
     }
 
+    /**
+     * Download a video from the url of the video object.
+     * @param video The video to download.
+     * @throws FailedToRetrievedMedia If the video couldn't be retrieved.
+     */
     public void getVideo(Video video) throws FailedToRetrievedMedia {
         int responseCode = 0;
         final String path = String.format("./output/downloaded/%s.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
@@ -69,6 +74,11 @@ public class RedditRepository {
             throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), responseCode);
     }
 
+    /**
+     * Download the audio from the url of the video object.
+     * @param video The video to get the audio from.
+     * @throws FailedToRetrievedMedia If the audio couldn't be retrieved.
+     */
     public void getAudio(Video video) throws FailedToRetrievedMedia {
         final String path = String.format("./output/downloaded/%s-audio.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
         final String[] suffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
@@ -86,6 +96,12 @@ public class RedditRepository {
         throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), responseCode);
     }
 
+    /**
+     * Request a media from an url and save it to a path.
+     * @param url the url of the media.
+     * @param path the local path to save the media.
+     * @return the response code of the request.
+     */
     private int requestMedia(String url, String path) {
         int requestCount = 0;
         OutputStream output = null;
