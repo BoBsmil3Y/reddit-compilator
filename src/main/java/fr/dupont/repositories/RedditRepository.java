@@ -22,7 +22,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  */
 public class RedditRepository {
 
-    private final int MAX_VIDEOS_PER_SUBREDDIT = 1;
+    private final int MAX_VIDEOS_PER_SUBREDDIT = 50;
     private final int REQUEST_ATTEMPT = 3;
     private final HttpClient client  = HttpClient.newHttpClient();
     private final ColorLogger logger = new ColorLogger();
@@ -66,7 +66,7 @@ public class RedditRepository {
      */
     public void getVideo(Video video) throws FailedToRetrievedMedia {
         int responseCode = 0;
-        final String path = String.format("./output/downloaded/%s.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
+        final String path = String.format("./output/downloaded/%s.mp4", video.getTitle().replaceAll("[^a-zA-Z0-9]", "_" ));
 
         responseCode = requestMedia(video.getUrl(), path);
 
@@ -80,7 +80,7 @@ public class RedditRepository {
      * @throws FailedToRetrievedMedia If the audio couldn't be retrieved.
      */
     public void getAudio(Video video) throws FailedToRetrievedMedia {
-        final String path = String.format("./output/downloaded/%s-audio.%s", video.getTitle(), video.getFormat().extension().toLowerCase());
+        final String path = String.format("./output/downloaded/%s-audio.mp4", video.getTitle().replaceAll("[^a-zA-Z0-9]", "_" ));
         final String[] suffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
         int responseCode = 0;
 

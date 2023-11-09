@@ -1,3 +1,3 @@
 package fr.dupont.models;
 
-public record MediaFormat(int height, int width, String extension) { }
+public record MediaFormat(int height, int width) { }
