@@ -1,5 +1,7 @@
 package fr.dupont;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.dupont.binder.RedditBinder;
 import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.localfiles.FolderUtils;
 import fr.dupont.models.MediaFormat;
@@ -14,7 +16,7 @@ public class Main {
     private static final String OUTPUT_FOLDER = "./output/downloaded/";
     private static final String CONFIG_PATH = "./src/main/resources/config.yaml";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JsonProcessingException {
 
         ColorLogger logger = new ColorLogger();
         logger.print(ColorLogger.Level.LOG, "Starting >> Reddit compilator project rewritten in Java.");
@@ -37,20 +39,31 @@ public class Main {
         );
 
         RedditRepository redditRepository = new RedditRepository();
-        System.out.println(redditRepository.getTopVideoListOfASub(subreddits.get(0)));
+//        System.out.println(redditRepository.getTopVideoListOfASub(subreddits.get(0)));
+//
+//        Video video = new Video("test", "test", "https://v.redd.it/a6nksmh0wqyb1/DASH_720.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F);
+//        try {
+//            redditRepository.getVideo(video);
+//            redditRepository.getAudio(video);
+//        } catch (FailedToRetrievedMedia e) {
+//            throw new RuntimeException(e);
+//        } finally {
+//
+//            //Delete both files
+//
+//        }
 
-        Video video = new Video("test", "test", "https://v.redd.it/a6nksmh0wqyb1/DASH_720.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F);
-        try {
-            redditRepository.getVideo(video);
-            redditRepository.getAudio(video);
-        } catch (FailedToRetrievedMedia e) {
-            throw new RuntimeException(e);
-        } finally {
 
-            //Delete both files
-
-        }
-
+        RedditBinder redditBinder = new RedditBinder();
+        ArrayList<Video> videos = redditBinder.parseVideos(redditRepository.getTopVideoListOfASub(subreddits.get(0)));
+        videos.forEach(video -> {
+            try {
+                redditRepository.getVideo(video);
+                redditRepository.getAudio(video);
+            } catch (FailedToRetrievedMedia e) {
+                throw new RuntimeException(e);
+            }
+        });
 
     }
 }
