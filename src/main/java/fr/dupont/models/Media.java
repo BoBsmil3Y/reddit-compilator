@@ -14,7 +14,6 @@ public abstract class Media {
     private final int createdEpochTime;
     private final boolean over18;
 
-    private final MediaFormat format;
     private final Grade grade;
 
 }
