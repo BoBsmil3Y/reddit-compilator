@@ -2,11 +2,10 @@ package fr.dupont;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.dupont.binder.RedditBinder;
+import fr.dupont.exceptions.FailedToGetList;
 import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.localfiles.FolderUtils;
-import fr.dupont.models.MediaFormat;
-import fr.dupont.models.Subreddit;
-import fr.dupont.models.Video;
+import fr.dupont.models.*;
 import fr.dupont.repositories.RedditRepository;
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ public class Main {
     private static final String OUTPUT_FOLDER = "./output/downloaded/";
     private static final String CONFIG_PATH = "./src/main/resources/config.yaml";
 
-    public static void main(String[] args) throws JsonProcessingException {
+    public static void main(String[] args) {
 
         ColorLogger logger = new ColorLogger();
         logger.print(ColorLogger.Level.LOG, "Starting >> Reddit compilator project rewritten in Java.");
@@ -27,43 +26,51 @@ public class Main {
         //Temporary solution (will be replaced by a config file)
         final ArrayList<Subreddit> subreddits = new ArrayList<>(
                 Arrays.asList(
-                        new Subreddit("Unexpected", 15F, 4, 40),
-                        new Subreddit("AbruptChaos", 15F, 10, 50),
-                        new Subreddit("StoppedWorking", 5F, 8, 25),
-                        new Subreddit("AAAAAAAAAAAAAAAAA", 5F, 2, 20),
-                        new Subreddit("WhyWereTheyFilming", 5F, 5, 50),
-                        new Subreddit("Whatcouldgowrong", 25F, 4, 40),
-                        new Subreddit("perfectlycutscreams", 20F, 3, 30),
-                        new Subreddit("funny", 10F, 5, 30)
+                        new Subreddit("Cursed_Images", 15F, 4, 40),
+                        new Subreddit("197", 15F, 10, 50),
+                        new Subreddit("MoldyMemes", 5F, 8, 25)
+
+//                        new Subreddit("Unexpected", 15F, 4, 40),
+//                        new Subreddit("AbruptChaos", 15F, 10, 50),
+//                        new Subreddit("StoppedWorking", 5F, 8, 25),
+//                        new Subreddit("AAAAAAAAAAAAAAAAA", 5F, 2, 20),
+//                        new Subreddit("WhyWereTheyFilming", 5F, 5, 50),
+//                        new Subreddit("Whatcouldgowrong", 25F, 4, 40),
+//                        new Subreddit("perfectlycutscreams", 20F, 3, 30),
+//                        new Subreddit("funny", 10F, 5, 30)
                 )
         );
 
         RedditRepository redditRepository = new RedditRepository();
-//        System.out.println(redditRepository.getTopVideoListOfASub(subreddits.get(0)));
-//
-//        Video video = new Video("test", "test", "https://v.redd.it/a6nksmh0wqyb1/DASH_720.mp4?source=fallback", 0, false, new MediaFormat(360, 472, "mp4"), null, 21F);
-//        try {
-//            redditRepository.getVideo(video);
-//            redditRepository.getAudio(video);
-//        } catch (FailedToRetrievedMedia e) {
-//            throw new RuntimeException(e);
-//        } finally {
-//
-//            //Delete both files
-//
-//        }
-
-
         RedditBinder redditBinder = new RedditBinder();
-        ArrayList<Video> videos = redditBinder.parseVideos(redditRepository.getTopVideoListOfASub(subreddits.get(0)));
-        videos.forEach(video -> {
+
+        subreddits.forEach(subreddit -> {
+
+            ArrayList<Media> medias = null;
+
             try {
-                redditRepository.getVideo(video);
-                redditRepository.getAudio(video);
-            } catch (FailedToRetrievedMedia e) {
-                throw new RuntimeException(e);
+                medias = redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
+            } catch (FailedToGetList | JsonProcessingException e) {
+                e.printStackTrace();
             }
+
+            medias.forEach(media -> {
+                try {
+                    redditRepository.downloadMedia(media);
+                } catch (FailedToRetrievedMedia e) {
+                    e.printStackTrace();
+                }
+            });
         });
+
+
+        //TODO: Merge video and audio files
+        //TODO: Add a selection class to select the best videos
+        //TODO: Add a progress bar
+        //TODO: Manage config file
+        //TODO: Manage logs on new method
+        //TODO: Add image download and parser (has to be fix)
+
 
     }
 }
