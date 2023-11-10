@@ -133,8 +133,9 @@ public class RedditRepository {
                     output.write(data, 0, count);
 
                 logger.print(ColorLogger.Level.SUCCESS, String.format("Media retrieved → %s", url));
+                return response.statusCode();
 
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException | InterruptedException | IllegalArgumentException e) {
 
                 logger.print(ColorLogger.Level.ERROR, String.format("Failed to get media → %s! Retrying ... %n%s", url, e.getMessage()));
                 requestCount++;
@@ -151,7 +152,9 @@ public class RedditRepository {
 
         }
 
-        assert response != null;
+        if (response == null)
+            return -1;
+
         return response.statusCode();
     }
 
