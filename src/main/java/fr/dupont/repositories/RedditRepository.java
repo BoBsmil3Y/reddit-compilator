@@ -1,7 +1,9 @@
 package fr.dupont.repositories;
 
 import fr.dupont.ColorLogger;
+import fr.dupont.exceptions.FailedToGetList;
 import fr.dupont.exceptions.FailedToRetrievedMedia;
+import fr.dupont.models.Media;
 import fr.dupont.models.Subreddit;
 import fr.dupont.models.Video;
 
@@ -22,124 +24,121 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  */
 public class RedditRepository {
 
-    private final int MAX_VIDEOS_PER_SUBREDDIT = 50;
-    private final int REQUEST_ATTEMPT = 3;
+    private final int maxMediaPerSubreddit = 50;
+    private final int requestAttempt = 2;
+    private final int timeoutSeconds = 4;
+    private final String[] suffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
     private final HttpClient client  = HttpClient.newHttpClient();
     private final ColorLogger logger = new ColorLogger();
 
     /**
-     * Get the top videos of a subreddit.
-     * @param subreddit The subreddit to get the top videos from.
+     * Get the top media list of a subreddit.
+     * @param subreddit The subreddit to get the top media from.
      * @return The response body of the request.
      */
-    public String getTopVideoListOfASub(Subreddit subreddit) {
+    public String getTopMediaListOfASub(Subreddit subreddit) throws FailedToGetList {
         int count = 0;
+        int responseCode = 0;
 
-        while (count < REQUEST_ATTEMPT) {
+        while (count < requestAttempt) {
 
             try {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(String.format("https://www.reddit.com/r/%s/top.json?sort=top&t=day&limit=%s", subreddit.name(), MAX_VIDEOS_PER_SUBREDDIT)))
+                        .uri(URI.create(String.format("https://www.reddit.com/r/%s/top.json?sort=top&t=day&limit=%s", subreddit.name(), maxMediaPerSubreddit)))
                         .header("accept", "application/json")
-                        .timeout(Duration.of(5, SECONDS))
+                        .timeout(Duration.of(timeoutSeconds, SECONDS))
                         .GET()
                         .build();
 
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                responseCode = response.statusCode();
 
-                logger.print(ColorLogger.Level.INFO, String.format("Response code: %s", response.statusCode()));
+                if (responseCode != 200){
+                    logger.print(ColorLogger.Level.ERROR, String.format("Failed to get top media of %s ! Retrying ... %d attempts", subreddit.name(), count));
+                    continue;
+                }
+
+                logger.print(ColorLogger.Level.INFO, String.format("Response code: %s", responseCode));
                 return response.body();
 
             } catch (IOException | InterruptedException e) {
-                logger.print(ColorLogger.Level.ERROR, String.format("Failed to get top videos of %s ! Retrying ... %n%s", subreddit.name(), e.getMessage()));
+                logger.print(ColorLogger.Level.ERROR, String.format("Failed to get top media of %s ! Retrying ... %n%s", subreddit.name(), e.getMessage()));
                 count++;
             }
         }
 
-        throw new RuntimeException("Failed to get top videos of " + subreddit.name());
+        throw new FailedToGetList(subreddit.name(), responseCode);
     }
 
     /**
-     * Download a video from the url of the video object.
-     * @param video The video to download.
-     * @throws FailedToRetrievedMedia If the video couldn't be retrieved.
+     * Download a media or an image from the url of the Media object.
+     * @param media The media to download.
+     * @throws FailedToRetrievedMedia If the media couldn't be retrieved.
      */
-    public void getVideo(Video video) throws FailedToRetrievedMedia {
-        int responseCode = 0;
-        final String path = String.format("./output/downloaded/%s.mp4", video.getTitle().replaceAll("[^a-zA-Z0-9]", "_" ));
+    public void downloadMedia(Media media) throws FailedToRetrievedMedia {
+        final String extension = media instanceof Video ? "mp4" : "jpg";
+        final String url = media.getUrl();
+        final String path = String.format("./output/downloaded/%s.%s", media.getTitle().replaceAll("[^a-zA-Z0-9]", "_"), extension);
+        final String audioPath = String.format("./output/downloaded/%s-audio.%s", media.getTitle().replaceAll("[^a-zA-Z0-9]", "_"), extension);
 
-        responseCode = requestMedia(video.getUrl(), path);
+        downloadFromUrl(url, path);
 
-        if (responseCode != 200)
-            throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), responseCode);
-    }
+        if (! (media instanceof Video))
+            return;
 
-    /**
-     * Download the audio from the url of the video object.
-     * @param video The video to get the audio from.
-     * @throws FailedToRetrievedMedia If the audio couldn't be retrieved.
-     */
-    public void getAudio(Video video) throws FailedToRetrievedMedia {
-        final String path = String.format("./output/downloaded/%s-audio.mp4", video.getTitle().replaceAll("[^a-zA-Z0-9]", "_" ));
-        final String[] suffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
-        int responseCode = 0;
+        for (String suffix : suffixes) {
+            String audioUrl = media.getUrl()
+                    .replaceAll("DASH_[0-9]+", suffix)
+                    .replace("?source=fallback", "");
 
-        for(int i = 0; i < suffixes.length; i++){
-            String url = video.getUrl()
-                            .replaceAll("DASH_[0-9]+", suffixes[i])
-                            .replace("?source=fallback", "");
-            responseCode = requestMedia(url, path);
-            if (responseCode == 200)
+            if (downloadFromUrl(audioUrl, audioPath) == 200)
                 return;
         }
 
-        throw new FailedToRetrievedMedia(video.getTitle(), video.getUrl(), responseCode);
+        throw new FailedToRetrievedMedia(url);
     }
 
     /**
-     * Request a media from an url and save it to a path.
-     * @param url the url of the media.
-     * @param path the local path to save the media.
-     * @return the response code of the request.
+     * Download from the url a media from Reddit server.
+     * @param url The url of the media to download.
+     * @param path The path where to save the media.
+     * @return The response code of the request.
      */
-    private int requestMedia(String url, String path) {
+    private int downloadFromUrl(final String url, final String path){
         int requestCount = 0;
         OutputStream output = null;
         InputStream input = null;
-        HttpResponse<InputStream> response;
+        HttpResponse<InputStream> response = null;
 
-        while (requestCount < REQUEST_ATTEMPT) {
+        while (requestCount < requestAttempt) {
 
             try {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
-                        .timeout(Duration.of(5, SECONDS))
+                        .timeout(Duration.of(timeoutSeconds, SECONDS))
                         .GET()
                         .build();
 
                 response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-                if (response.statusCode() > 400  && response.statusCode() < 408)
-                    return response.statusCode();
-
                 if (response.statusCode() != 200)
-                    continue;
+                    throw new IOException();
 
                 input = response.body();
                 output = new FileOutputStream(path);
                 byte[] data = new byte[4096];
                 int count;
 
-                while ((count = input.read(data)) != -1) {
+                while ((count = input.read(data)) != -1)
                     output.write(data, 0, count);
-                }
 
                 logger.print(ColorLogger.Level.SUCCESS, String.format("Media retrieved → %s", url));
-                return response.statusCode();
 
             } catch (IOException | InterruptedException e) {
+
                 logger.print(ColorLogger.Level.ERROR, String.format("Failed to get media → %s! Retrying ... %n%s", url, e.getMessage()));
                 requestCount++;
+
             } finally {
                 try {
                     if (output != null)
@@ -152,7 +151,8 @@ public class RedditRepository {
 
         }
 
-        return -1;
+        assert response != null;
+        return response.statusCode();
     }
 
 }
