@@ -24,10 +24,10 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  */
 public class RedditRepository {
 
-    private final int maxMediaPerSubreddit = 50;
-    private final int requestAttempt = 2;
-    private final int timeoutSeconds = 4;
-    private final String[] suffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
+    private static final int MAX_MEDIA_PER_SUBREDDIT = 50;
+    private static final int REQUEST_ATTEMPT = 2;
+    private static final int TIMEOUT_SECONDS = 4;
+    private final String[] audioSuffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
     private final HttpClient client  = HttpClient.newHttpClient();
     private final ColorLogger logger = new ColorLogger();
 
@@ -36,21 +36,21 @@ public class RedditRepository {
      * @param subreddit The subreddit to get the top media from.
      * @return The response body of the request.
      */
-    public String getTopMediaListOfASub(Subreddit subreddit) throws FailedToGetList {
+    public String getTopMediaListOfASub(final Subreddit subreddit) throws FailedToGetList {
         int count = 0;
         int responseCode = 0;
 
-        while (count < requestAttempt) {
+        while (count < REQUEST_ATTEMPT) {
 
             try {
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(String.format("https://www.reddit.com/r/%s/top.json?sort=top&t=day&limit=%s", subreddit.name(), maxMediaPerSubreddit)))
+                final HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(String.format("https://www.reddit.com/r/%s/top.json?sort=top&t=day&limit=%s", subreddit.name(), MAX_MEDIA_PER_SUBREDDIT)))
                         .header("accept", "application/json")
-                        .timeout(Duration.of(timeoutSeconds, SECONDS))
+                        .timeout(Duration.of(TIMEOUT_SECONDS, SECONDS))
                         .GET()
                         .build();
 
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 responseCode = response.statusCode();
 
                 if (responseCode != 200){
@@ -75,20 +75,21 @@ public class RedditRepository {
      * @param media The media to download.
      * @throws FailedToRetrievedMedia If the media couldn't be retrieved.
      */
-    public void downloadMedia(Media media) throws FailedToRetrievedMedia {
+    public void downloadMedia(final Media media) throws FailedToRetrievedMedia {
         final String extension = media instanceof Video ? "mp4" : "jpg";
         final String url = media.getUrl();
         final String path = String.format("./output/downloaded/%s.%s", media.getTitle().replaceAll("[^a-zA-Z0-9]", "_"), extension);
         final String audioPath = String.format("./output/downloaded/%s-audio.%s", media.getTitle().replaceAll("[^a-zA-Z0-9]", "_"), extension);
 
-        downloadFromUrl(url, path);
+        if (downloadFromUrl(url, path) != 200)
+            throw new FailedToRetrievedMedia(url);
 
         if (! (media instanceof Video))
             return;
 
-        for (String suffix : suffixes) {
-            String audioUrl = media.getUrl()
-                    .replaceAll("DASH_[0-9]+", suffix)
+        for (String suffix : audioSuffixes) {
+            final String audioUrl = media.getUrl()
+                    .replaceAll("DASH_[\\d]+", suffix)
                     .replace("?source=fallback", "");
 
             if (downloadFromUrl(audioUrl, audioPath) == 200)
@@ -106,16 +107,15 @@ public class RedditRepository {
      */
     private int downloadFromUrl(final String url, final String path){
         int requestCount = 0;
-        OutputStream output = null;
         InputStream input = null;
         HttpResponse<InputStream> response = null;
 
-        while (requestCount < requestAttempt) {
+        while (requestCount < REQUEST_ATTEMPT) {
 
-            try {
-                HttpRequest request = HttpRequest.newBuilder()
+            try(OutputStream output = new FileOutputStream(path)) {
+                final HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
-                        .timeout(Duration.of(timeoutSeconds, SECONDS))
+                        .timeout(Duration.of(TIMEOUT_SECONDS, SECONDS))
                         .GET()
                         .build();
 
@@ -125,7 +125,6 @@ public class RedditRepository {
                     throw new IOException();
 
                 input = response.body();
-                output = new FileOutputStream(path);
                 byte[] data = new byte[4096];
                 int count;
 
@@ -142,8 +141,6 @@ public class RedditRepository {
 
             } finally {
                 try {
-                    if (output != null)
-                        output.close();
                     if (input != null)
                         input.close();
 

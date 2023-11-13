@@ -2,6 +2,7 @@ package fr.dupont;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.dupont.binder.RedditBinder;
+import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.exceptions.FailedToGetList;
 import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.localfiles.FolderUtils;
@@ -49,8 +50,8 @@ public class Main {
             ArrayList<Media> medias = null;
 
             try {
-                medias = redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
-            } catch (FailedToGetList | JsonProcessingException e) {
+                medias = (ArrayList<Media>) redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
+            } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse e) {
                 e.printStackTrace();
             }
 

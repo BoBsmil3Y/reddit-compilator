@@ -3,6 +3,7 @@ package fr.dupont.binder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.models.*;
 
 import java.util.ArrayList;
@@ -11,19 +12,22 @@ import java.util.List;
 
 public class RedditBinder {
 
-    public ArrayList<Media> parse(String apiResponse) throws JsonProcessingException {
+    /**
+     * Parse the response of the Reddit API to get the media list.
+     * @param apiResponse The response of the Reddit API.
+     * @return The media list.
+     */
+    public List<Media> parse(final String apiResponse) throws JsonProcessingException, EmptyApiResponse {
 
-        ArrayList<Media> medias = new ArrayList<>();
-        ObjectMapper objectMapper = new ObjectMapper();
+        final ArrayList<Media> medias = new ArrayList<>();
+        final JsonNode rootNode = new ObjectMapper().readTree(apiResponse).path("data").path("children");
 
-        JsonNode rootNode = objectMapper.readTree(apiResponse).path("data").path("children");
-
-        if (rootNode.size() == 0)
-            throw new RuntimeException("No media found in the response.");
+        if (rootNode.isEmpty())
+            throw new EmptyApiResponse();
 
         Iterator<JsonNode> children = rootNode.elements();
         while(children.hasNext()){
-            JsonNode child = children.next().path("data");
+            final JsonNode child = children.next().path("data");
 
             if (child.get("url_overridden_by_dest").asText().contains("v.redd.it")) {
                 medias.add(parseVideo(child));
@@ -35,16 +39,21 @@ public class RedditBinder {
         return medias;
     }
 
-    public Video parseVideo(JsonNode child) {
+    /**
+     * Parse a JsonNode to get the video information.
+     * @param child The JsonNode to parse.
+     * @return The video information.
+     */
+    public Video parseVideo(final JsonNode child) {
 
-        JsonNode videoInfo = child.path("secure_media").path("reddit_video");
+        final JsonNode videoInfo = child.path("secure_media").path("reddit_video");
 
-        MediaFormat mediaFormat = new MediaFormat(
+        final MediaFormat mediaFormat = new MediaFormat(
                 videoInfo.path("height").asInt(),
                 videoInfo.path("width").asInt()
         );
 
-        Grade grade = new Grade(
+        final Grade grade = new Grade(
                 child.path("score").asInt(),
                 child.path("ups").asInt(),
                 child.path("upvote_ratio").floatValue()
@@ -62,11 +71,14 @@ public class RedditBinder {
         );
     }
 
-    public Thumbnail parseImage(JsonNode child) {
+    /**
+     * Parse a JsonNode to get the image information.
+     * @param child The JsonNode to parse.
+     * @return The image information.
+     */
+    public Thumbnail parseImage(final JsonNode child) {
 
-        JsonNode imageInfo = child.path("preview").path("images").path("variants").path("gif");
-
-        Grade grade = new Grade(
+        final Grade grade = new Grade(
                 child.path("score").asInt(),
                 child.path("ups").asInt(),
                 child.path("upvote_ratio").floatValue()
