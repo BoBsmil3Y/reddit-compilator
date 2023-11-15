@@ -16,4 +16,14 @@ public class MergeMediaFiles {
         }
     }
 
+    public boolean isFfmpegIsInstalled() {
+        String[] command = {"ffmpeg", "-version"};
+        try {
+            new ProcessBuilder(command).start();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }
