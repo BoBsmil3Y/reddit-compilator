@@ -8,12 +8,14 @@ import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.localfiles.FolderUtils;
 import fr.dupont.models.*;
 import fr.dupont.repositories.RedditRepository;
+import fr.dupont.videomanipulation.MergeMediaFiles;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Main {
-    private static final String OUTPUT_FOLDER = "./output/downloaded/";
+    public static final String OUTPUT_FOLDER = "./output/downloaded/";
+    public static final String FULL_OUTPUT_FOLDER = "E:/Projets/Reddit-Compilator-java/output/downloaded/";
     private static final String CONFIG_PATH = "./src/main/resources/config.yaml";
 
     public static void main(String[] args) {
@@ -27,11 +29,11 @@ public class Main {
         //Temporary solution (will be replaced by a config file)
         final ArrayList<Subreddit> subreddits = new ArrayList<>(
                 Arrays.asList(
-                        new Subreddit("Cursed_Images", 15F, 4, 40),
-                        new Subreddit("197", 15F, 10, 50),
-                        new Subreddit("MoldyMemes", 5F, 8, 25)
+//                        new Subreddit("Cursed_Images", 15F, 4, 40),
+//                        new Subreddit("197", 15F, 10, 50),
+//                        new Subreddit("MoldyMemes", 5F, 8, 25)
 
-//                        new Subreddit("Unexpected", 15F, 4, 40),
+                        new Subreddit("Unexpected", 15F, 4, 40)
 //                        new Subreddit("AbruptChaos", 15F, 10, 50),
 //                        new Subreddit("StoppedWorking", 5F, 8, 25),
 //                        new Subreddit("AAAAAAAAAAAAAAAAA", 5F, 2, 20),
@@ -42,8 +44,9 @@ public class Main {
                 )
         );
 
-        RedditRepository redditRepository = new RedditRepository();
-        RedditBinder redditBinder = new RedditBinder();
+        final RedditRepository redditRepository = new RedditRepository();
+        final RedditBinder redditBinder = new RedditBinder();
+        final MergeMediaFiles merger = new MergeMediaFiles();
 
         subreddits.forEach(subreddit -> {
 
@@ -58,12 +61,15 @@ public class Main {
             medias.forEach(media -> {
                 try {
                     redditRepository.downloadMedia(media);
+
+                    if (media instanceof Video)
+                        merger.mergeAudioAndVideo((Video) media);
+
                 } catch (FailedToRetrievedMedia e) {
                     e.printStackTrace();
                 }
             });
         });
-
 
         //TODO: Merge video and audio files
         //TODO: Add a selection class to select the best videos
