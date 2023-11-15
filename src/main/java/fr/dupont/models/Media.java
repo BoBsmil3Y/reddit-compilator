@@ -11,6 +11,7 @@ public abstract class Media {
     private final String title;
     private final String author;
     private final String url;
+    private final String localUrl;
     private final int createdEpochTime;
     private final boolean over18;
 

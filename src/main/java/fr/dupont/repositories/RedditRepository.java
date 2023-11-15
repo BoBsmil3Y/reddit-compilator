@@ -76,12 +76,9 @@ public class RedditRepository {
      * @throws FailedToRetrievedMedia If the media couldn't be retrieved.
      */
     public void downloadMedia(final Media media) throws FailedToRetrievedMedia {
-        final String extension = media instanceof Video ? "mp4" : "jpg";
         final String url = media.getUrl();
-        final String path = String.format("./output/downloaded/%s.%s", media.getTitle().replaceAll("[^a-zA-Z0-9]", "_"), extension);
-        final String audioPath = String.format("./output/downloaded/%s-audio.%s", media.getTitle().replaceAll("[^a-zA-Z0-9]", "_"), extension);
 
-        if (downloadFromUrl(url, path) != 200)
+        if (downloadFromUrl(url, media.getLocalUrl()) != 200)
             throw new FailedToRetrievedMedia(url);
 
         if (! (media instanceof Video))
@@ -92,7 +89,7 @@ public class RedditRepository {
                     .replaceAll("DASH_[\\d]+", suffix)
                     .replace("?source=fallback", "");
 
-            if (downloadFromUrl(audioUrl, audioPath) == 200)
+            if (downloadFromUrl(audioUrl, ((Video) media).getLocalAudioUrl()) == 200)
                 return;
         }
 

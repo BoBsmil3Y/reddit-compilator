@@ -3,6 +3,7 @@ package fr.dupont.binder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.dupont.Main;
 import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.models.*;
 
@@ -47,6 +48,7 @@ public class RedditBinder {
     public Video parseVideo(final JsonNode child) {
 
         final JsonNode videoInfo = child.path("secure_media").path("reddit_video");
+        final String title = child.path("title").asText();
 
         final MediaFormat mediaFormat = new MediaFormat(
                 videoInfo.path("height").asInt(),
@@ -60,9 +62,11 @@ public class RedditBinder {
         );
 
         return new Video(
-                child.path("title").asText(),
+                title,
                 child.path("author").asText(),
                 videoInfo.path("fallback_url").asText(),
+                String.format("%s%s.mp4", Main.FULL_OUTPUT_FOLDER, title.replaceAll("[^a-zA-Z0-9]", "_")),
+                String.format("%s%s-audio.mp4", Main.FULL_OUTPUT_FOLDER, title.replaceAll("[^a-zA-Z0-9]", "_")),
                 child.path("created").asInt(),
                 child.path("over_18").asBoolean(),
                 mediaFormat,
@@ -88,6 +92,7 @@ public class RedditBinder {
                 child.path("title").asText(),
                 child.path("author").asText(),
                 child.path("url").asText(),
+                String.format("%s%s.jpg", Main.FULL_OUTPUT_FOLDER, child.path("url").asText().replaceAll("[^a-zA-Z0-9]", "_")),
                 child.path("created").asInt(),
                 child.path("over_18").asBoolean(),
                 grade
