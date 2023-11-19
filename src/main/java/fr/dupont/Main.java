@@ -47,15 +47,11 @@ public class Main {
 
 //        final RedditRepository redditRepository = new RedditRepository();
 //        final RedditBinder redditBinder = new RedditBinder();
-//        final MergeMediaFiles merger = new MergeMediaFiles();
+        final MergeMediaFiles merger = new MergeMediaFiles();
 //
-//        if (merger.isFfmpegIsInstalled()){
-//            logger.print(ColorLogger.Level.INFO, "FFMPEG is installed !");
-//        } else {
-//            logger.print(ColorLogger.Level.ERROR, "FFMPEG is not installed !");
-//            return;
-//        }
-//
+        if (! merger.isFfmpegIsInstalled())
+            return;
+
 //        subreddits.forEach(subreddit -> {
 //
 //            ArrayList<Media> medias = null;
