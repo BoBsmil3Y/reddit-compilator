@@ -15,7 +15,5 @@ public class Video extends Media {
         this.format = format;
         this.localAudioUrl = localAudioUrl;
     }
-
-//    public boolean isAccepted
-
+    
 }
