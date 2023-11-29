@@ -6,12 +6,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.dupont.Main;
 import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.models.*;
+import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+@AllArgsConstructor
 public class RedditBinder {
+
+    private Subreddit subreddit;
 
     /**
      * Parse the response of the Reddit API to get the media list.
@@ -71,7 +75,8 @@ public class RedditBinder {
                 child.path("over_18").asBoolean(),
                 mediaFormat,
                 grade,
-                (float) videoInfo.path("duration").asInt()
+                (float) videoInfo.path("duration").asInt(),
+                this.subreddit
         );
     }
 
@@ -95,7 +100,8 @@ public class RedditBinder {
                 String.format("%s%s.jpg", Main.FULL_OUTPUT_FOLDER, child.path("url").asText().replaceAll("[^a-zA-Z0-9]", "_")),
                 child.path("created").asInt(),
                 child.path("over_18").asBoolean(),
-                grade
+                grade,
+                this.subreddit
         );
     }
 

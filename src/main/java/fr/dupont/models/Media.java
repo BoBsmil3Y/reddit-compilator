@@ -16,5 +16,6 @@ public abstract class Media {
     private final boolean over18;
 
     private final Grade grade;
+    private final Subreddit subreddit;
 
 }
