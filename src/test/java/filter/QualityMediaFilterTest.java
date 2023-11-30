@@ -1,7 +1,5 @@
 package filter;
 
-import fr.dupont.filter.Filter;
-import fr.dupont.filter.GradeFilter;
 import fr.dupont.filter.QualityFilter;
 import fr.dupont.filter.VideoFilter;
 import fr.dupont.models.*;
@@ -12,7 +10,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class QualityFilterTest {
+public class QualityMediaFilterTest {
 
     List<Video> videos;
     Video video, videoLowQuality;

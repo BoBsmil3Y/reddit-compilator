@@ -1,7 +1,7 @@
 package filter;
 
-import fr.dupont.filter.Filter;
-import fr.dupont.filter.GradeFilter;
+import fr.dupont.filter.MediaFilter;
+import fr.dupont.filter.GradeMediaFilter;
 import fr.dupont.models.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,12 +10,12 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class GradeFilterTest {
+public class GradeMediaFilterTest {
 
     List<Media> medias;
     Thumbnail thumbnail;
     Video video, videoLowUps;
-    Filter filter = new GradeFilter();
+    MediaFilter mediaFilter = new GradeMediaFilter();
 
     @Before
     public void setUp() {
@@ -32,7 +32,7 @@ public class GradeFilterTest {
     @Test
     public void testApplyRemoveTooLowGrade() {
 
-        List<Media> res = filter.apply(medias);
+        List<Media> res = mediaFilter.apply(medias);
 
         assertEquals(1, res.size());
         assertEquals(thumbnail, res.get(0));
