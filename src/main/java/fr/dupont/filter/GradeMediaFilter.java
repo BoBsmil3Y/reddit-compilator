@@ -1,13 +1,12 @@
 package fr.dupont.filter;
 
 import fr.dupont.models.Media;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
-public class GradeFilter implements Filter {
+public class GradeMediaFilter implements MediaFilter {
 
     private final float minUpVoteRatio = 0.8F;
     private final int minUpVote = 250;
