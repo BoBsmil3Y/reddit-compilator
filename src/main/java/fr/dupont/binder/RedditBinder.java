@@ -8,6 +8,9 @@ import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.models.*;
 import lombok.AllArgsConstructor;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +74,7 @@ public class RedditBinder {
                 videoInfo.path("fallback_url").asText(),
                 String.format("%s%s.mp4", Main.FULL_OUTPUT_FOLDER, title.replaceAll("[^a-zA-Z0-9]", "_")),
                 String.format("%s%s-audio.mp4", Main.FULL_OUTPUT_FOLDER, title.replaceAll("[^a-zA-Z0-9]", "_")),
-                child.path("created").asInt(),
+                parseDate(child.path("created").asInt()),
                 child.path("over_18").asBoolean(),
                 mediaFormat,
                 grade,
@@ -98,11 +101,20 @@ public class RedditBinder {
                 child.path("author").asText(),
                 child.path("url").asText(),
                 String.format("%s%s.jpg", Main.FULL_OUTPUT_FOLDER, child.path("url").asText().replaceAll("[^a-zA-Z0-9]", "_")),
-                child.path("created").asInt(),
+                parseDate(child.path("created").asInt()),
                 child.path("over_18").asBoolean(),
                 grade,
                 this.subreddit
         );
+    }
+
+    /**
+     * Parse the epoch time to get the date.
+     * @param epochTime The epoch time to parse.
+     * @return The date.
+     */
+    private LocalDateTime parseDate(final int epochTime) {
+        return LocalDateTime.ofEpochSecond(epochTime, 0, ZoneId.of("Europe/Berlin").getRules().getOffset(Instant.now()));
     }
 
 }
