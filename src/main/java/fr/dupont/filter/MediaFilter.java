@@ -4,7 +4,7 @@ import fr.dupont.models.Media;
 
 import java.util.List;
 
-public interface Filter {
+public interface MediaFilter  {
 
     List<Media> apply(List<Media> medias);
 
