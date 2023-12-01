@@ -1,7 +1,7 @@
 package filter;
 
 import fr.dupont.filter.MediaFilter;
-import fr.dupont.filter.GradeMediaFilter;
+import fr.dupont.filter.mediafilter.GradeMediaFilter;
 import fr.dupont.models.*;
 import org.junit.Before;
 import org.junit.Test;

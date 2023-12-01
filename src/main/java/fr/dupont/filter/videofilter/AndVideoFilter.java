@@ -1,5 +1,6 @@
-package fr.dupont.filter;
+package fr.dupont.filter.videofilter;
 
+import fr.dupont.filter.VideoFilter;
 import fr.dupont.models.Video;
 
 import java.util.List;

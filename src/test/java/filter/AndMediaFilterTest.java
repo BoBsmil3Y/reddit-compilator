@@ -1,10 +1,9 @@
 package filter;
 
-import fr.dupont.filter.AndMediaFilter;
+import fr.dupont.filter.mediafilter.AndMediaFilter;
 import fr.dupont.filter.MediaFilter;
-import fr.dupont.filter.GradeMediaFilter;
-import fr.dupont.filter.NsfwMediaFilter;
-import fr.dupont.filter.videofilter.DurationFilter;
+import fr.dupont.filter.mediafilter.GradeMediaFilter;
+import fr.dupont.filter.mediafilter.NsfwMediaFilter;
 import fr.dupont.models.Grade;
 import fr.dupont.models.Media;
 import fr.dupont.models.Thumbnail;

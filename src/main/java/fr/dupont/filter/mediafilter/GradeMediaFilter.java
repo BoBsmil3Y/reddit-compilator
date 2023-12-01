@@ -1,5 +1,6 @@
-package fr.dupont.filter;
+package fr.dupont.filter.mediafilter;
 
+import fr.dupont.filter.MediaFilter;
 import fr.dupont.models.Media;
 import lombok.Getter;
 
