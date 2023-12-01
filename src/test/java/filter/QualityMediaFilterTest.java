@@ -1,11 +1,12 @@
 package filter;
 
-import fr.dupont.filter.QualityFilter;
+import fr.dupont.filter.videofilter.QualityFilter;
 import fr.dupont.filter.VideoFilter;
 import fr.dupont.models.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -18,9 +19,9 @@ public class QualityMediaFilterTest {
 
     @Before
     public void setUp() {
-        video = new Video("", "", "", "", "", 1, false,
+        video = new Video("", "", "", "", "", LocalDateTime.MAX, false,
                 new MediaFormat(1000, 1000), null, 10f,null);
-        videoLowQuality = new Video("", "", "", "", "", 1, false,
+        videoLowQuality = new Video("", "", "", "", "", LocalDateTime.MAX, false,
                         new MediaFormat(1, 1), null, 10f, null);
 
         videos = List.of(videoLowQuality, video);
