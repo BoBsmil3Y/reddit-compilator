@@ -5,7 +5,7 @@ import fr.dupont.models.Media;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class TimeFilter implements MediaFilter {
+public class TodayFilter implements MediaFilter {
 
     LocalDateTime today = LocalDateTime.now();
 
