@@ -4,11 +4,11 @@ import fr.dupont.models.Media;
 
 import java.util.List;
 
-public class AndFilter implements MediaFilter {
+public class AndMediaFilter implements MediaFilter {
 
     private final List<MediaFilter> mediaFilters;
 
-    public AndFilter(MediaFilter... mediaFilters) {
+    public AndMediaFilter(MediaFilter... mediaFilters) {
         this.mediaFilters = List.of(mediaFilters);
     }
 
