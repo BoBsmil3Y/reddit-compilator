@@ -4,7 +4,6 @@ import fr.dupont.ColorLogger;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,11 +49,15 @@ public class FolderUtils {
 
     }
 
+    /**
+     * Delete a file.
+     * @param path The path of the file to delete.
+     */
     public static void deleteFile(String path){
         try {
             Files.deleteIfExists(Paths.get(path));
         } catch (IOException e) {
-            e.printStackTrace();
+            new ColorLogger().print(ColorLogger.Level.ERROR, String.format("Failed to delete %s !%n%s", path, e.getMessage()));
         }
     }
 
