@@ -20,14 +20,13 @@ import fr.dupont.models.Video;
 import fr.dupont.repositories.RedditRepository;
 import fr.dupont.videomanipulation.MergeMediaFiles;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VideoPicker {
 
-    final private RedditRepository redditRepository = new RedditRepository();
-    final private List<Subreddit> subreddits;
+    private final RedditRepository redditRepository = new RedditRepository();
+    private final List<Subreddit> subreddits;
 
     public VideoPicker(List<Subreddit> subreddits) {
         this.subreddits = subreddits;
@@ -36,11 +35,10 @@ public class VideoPicker {
     public void pickVideos() {
         subreddits.forEach(subreddit -> {
             final RedditBinder redditBinder = new RedditBinder(subreddit);
-            ArrayList<Media> medias = null;
 
             try {
-                medias = (ArrayList<Media>) redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
-                List<Video> videos = filterVideos(medias);
+                final ArrayList<Media> medias = (ArrayList<Media>) redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
+                final List<Video> videos = filterVideos(medias);
                 mergeAndClean(videos);
 
             } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse e) {
@@ -80,12 +78,16 @@ public class VideoPicker {
         videos.forEach(video -> {
             try {
                 redditRepository.downloadMedia(video);
-                merger.mergeAudioAndVideo(video);
-
             } catch (FailedToRetrievedMedia e) {
                 e.printStackTrace();
                 FolderUtils.deleteFile(video.getLocalUrl());
             }
+
+            merger.mergeAudioAndVideo(video);
+
+            FolderUtils.deleteFile(video.getLocalAudioUrl());
+            FolderUtils.deleteFile(video.getLocalUrl());
+
         });
 
     }

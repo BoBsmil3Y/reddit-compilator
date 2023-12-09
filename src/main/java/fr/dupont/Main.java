@@ -1,23 +1,16 @@
 package fr.dupont;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import fr.dupont.binder.RedditBinder;
 import fr.dupont.configuration.ConfigMapper;
 import fr.dupont.exceptions.*;
 import fr.dupont.localfiles.FolderUtils;
 import fr.dupont.models.*;
 import fr.dupont.picker.VideoPicker;
-import fr.dupont.repositories.RedditRepository;
 import fr.dupont.videomanipulation.MergeMediaFiles;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Main {
     public static final String OUTPUT_FOLDER = "./output/downloaded/";
-    public static final String FULL_OUTPUT_FOLDER = "E:/Projets/Reddit-Compilator-java/output/downloaded/";
     public static final String CONFIG_PATH = "./src/main/resources/config.json";
 
     private static Config config;
