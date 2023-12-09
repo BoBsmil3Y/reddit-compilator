@@ -18,6 +18,7 @@ import fr.dupont.models.Media;
 import fr.dupont.models.Subreddit;
 import fr.dupont.models.Video;
 import fr.dupont.repositories.RedditRepository;
+import fr.dupont.videomanipulation.MergeMediaFiles;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -39,6 +40,9 @@ public class VideoPicker {
 
             try {
                 medias = (ArrayList<Media>) redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
+                List<Video> videos = filterVideos(medias);
+                mergeAndClean(videos);
+
             } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse e) {
                 e.printStackTrace();
             }
@@ -46,6 +50,11 @@ public class VideoPicker {
         });
     }
 
+    /**
+     * Filter videos to find the best videos with subreddit constraint
+     * @param medias List of medias
+     * @return a list of Video filtered
+     */
     public List<Video> filterVideos(List<Media> medias) {
         final AndVideoFilter andVideoFilter = new AndVideoFilter(new DurationFilter(), new QualityFilter());
         final AndMediaFilter andMediaFilter = new AndMediaFilter(new GradeMediaFilter(), new NsfwMediaFilter(), new TodayFilter());
@@ -59,5 +68,27 @@ public class VideoPicker {
 
         return andVideoFilter.apply(videos);
     }
+
+    /**
+     * Merge audio and video and clean the local file
+     * to only keep the merged file
+     * @param videos List of medias
+     */
+    public void mergeAndClean(List<Video> videos) {
+        MergeMediaFiles merger = new MergeMediaFiles();
+
+        videos.forEach(video -> {
+            try {
+                redditRepository.downloadMedia(video);
+                merger.mergeAudioAndVideo(video);
+
+            } catch (FailedToRetrievedMedia e) {
+                e.printStackTrace();
+                FolderUtils.deleteFile(video.getLocalUrl());
+            }
+        });
+
+    }
+
 
 }
