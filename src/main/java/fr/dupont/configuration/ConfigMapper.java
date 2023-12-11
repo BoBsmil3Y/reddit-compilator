@@ -15,6 +15,10 @@ public class ConfigMapper {
 
     private final ColorLogger logger = new ColorLogger();
 
+    /**
+     * Get the config file and return a Config object.
+     * @return Config object
+     */
     public Config getConfig(){
         Config config;
         try {
@@ -38,6 +42,11 @@ public class ConfigMapper {
         return config;
     }
 
+    /**
+     * Write a Config object in the config file.
+     * @param config Config object
+     * @throws FailedToWriteConfig if the config file is not found or if the file is corrupted
+     */
     private void writeConfigFile(Config config) throws FailedToWriteConfig {
 
         logger.print(ColorLogger.Level.INFO, "Writing in config file...");
@@ -52,6 +61,11 @@ public class ConfigMapper {
 
     }
 
+    /**
+     * Read the config file and return a Config object.
+     * @return Config object
+     * @throws FailedToReadConfig if the config file is not found or if the file is corrupted
+     */
     private Config readConfigFile() throws FailedToReadConfig {
         Config config;
 
