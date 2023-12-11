@@ -6,14 +6,39 @@ import fr.dupont.Main;
 import fr.dupont.exceptions.FailedToReadConfig;
 import fr.dupont.exceptions.FailedToWriteConfig;
 import fr.dupont.models.Config;
+import fr.dupont.models.Subreddit;
 
 import java.io.*;
+import java.util.List;
 
 public class ConfigMapper {
 
     private final ColorLogger logger = new ColorLogger();
 
-    public void writeConfigFile(Config config) throws FailedToWriteConfig {
+    public Config getConfig(){
+        Config config;
+        try {
+            config = readConfigFile();
+        } catch (FailedToReadConfig e) {
+            logger.print(ColorLogger.Level.INFO, "Creating a new one ...");
+            config = new Config(1, 1, "video title",
+                    List.of(new Subreddit("Unexpected", 15F, 4, 40)),
+                    List.of(new Subreddit("Cursed_Images", 0F, 0, 0))
+            );
+            try {
+                writeConfigFile(config);
+                logger.print(ColorLogger.Level.WARNING, "The compilator will stop to let you configure the config.json file.");
+            } catch (FailedToWriteConfig e1) {
+                logger.print(ColorLogger.Level.ERROR, "Fatal error! Stopping compilator.");
+            } finally {
+                System.exit(1);
+            }
+        }
+
+        return config;
+    }
+
+    private void writeConfigFile(Config config) throws FailedToWriteConfig {
 
         logger.print(ColorLogger.Level.INFO, "Writing in config file...");
         try {
@@ -27,7 +52,7 @@ public class ConfigMapper {
 
     }
 
-    public Config readConfigFile() throws FailedToReadConfig {
+    private Config readConfigFile() throws FailedToReadConfig {
         Config config;
 
         logger.print(ColorLogger.Level.INFO, "Reading config file...");
