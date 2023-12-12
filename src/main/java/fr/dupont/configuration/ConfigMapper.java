@@ -26,8 +26,8 @@ public class ConfigMapper {
         } catch (FailedToReadConfig e) {
             logger.print(ColorLogger.Level.INFO, "Creating a new one ...");
             config = new Config(1, 1, "video title",
-                    List.of(new Subreddit("Unexpected", 15F, 4, 40)),
-                    List.of(new Subreddit("Cursed_Images", 0F, 0, 0))
+                    List.of(new Subreddit("Unexpected", 15F, 4, 40, 100)),
+                    List.of(new Subreddit("Cursed_Images", 0F, 0, 0, 50))
             );
             try {
                 writeConfigFile(config);
