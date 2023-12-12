@@ -10,13 +10,12 @@ import java.util.List;
 public class GradeMediaFilter implements MediaFilter {
 
     private final float minUpVoteRatio = 0.8F;
-    private final int minUpVote = 250;
 
     @Override
     public List<Media> apply(List<Media> medias) {
         return medias.stream()
-                .filter(media -> media.getGrade().upvoteRatio() >= minUpVoteRatio
-                                    && media.getGrade().ups() >= minUpVote)
+                .filter(media -> media.getGrade().ups() >= media.getSubreddit().minUps()
+                                    && media.getGrade().upvoteRatio() >= minUpVoteRatio)
                 .toList();
     }
 
