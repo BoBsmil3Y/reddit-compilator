@@ -4,15 +4,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.dupont.binder.RedditBinder;
 import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.exceptions.FailedToGetList;
+import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.filter.mediafilter.AndMediaFilter;
 import fr.dupont.filter.mediafilter.GradeMediaFilter;
 import fr.dupont.filter.mediafilter.NsfwMediaFilter;
 import fr.dupont.filter.mediafilter.TodayFilter;
+import fr.dupont.localfiles.FolderUtils;
 import fr.dupont.models.Media;
 import fr.dupont.models.Subreddit;
 import fr.dupont.models.Thumbnail;
+import fr.dupont.models.Video;
 import fr.dupont.repositories.RedditRepository;
+import fr.dupont.videomanipulation.MergeMediaFiles;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +36,21 @@ public class ThumbnailPicker {
 
             try {
                 final ArrayList<Media> medias = (ArrayList<Media>) redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
-                final List<Thumbnail> thumbnails = filterThumbnails(medias);
+                ArrayList<Thumbnail> thumbnails = new ArrayList<>(filterThumbnails(medias));
 
+                thumbnails.sort(
+                    (t0, t1) -> {
+                        if (t0.getGrade().ups() >= t1.getGrade().ups())
+                            return -1;
+                        else
+                            return 1;
+                    }
+                );
+
+                redditRepository.downloadMedia(thumbnails.get(0));
             } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse e) {
+                throw new RuntimeException(e);
+            } catch (FailedToRetrievedMedia e) {
                 throw new RuntimeException(e);
             }
         });
