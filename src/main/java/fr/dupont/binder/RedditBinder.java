@@ -100,7 +100,7 @@ public class RedditBinder {
                 child.path("title").asText(),
                 child.path("author").asText(),
                 child.path("url").asText(),
-                String.format("%s%s.jpg", Main.OUTPUT_FOLDER, child.path("url").asText().replaceAll("[^a-zA-Z0-9]", "_")),
+                String.format("%s%s.jpg", Main.OUTPUT_FOLDER, child.path("title").asText().replaceAll("[^a-zA-Z0-9]", "_")),
                 parseDate(child.path("created").asInt()),
                 child.path("over_18").asBoolean(),
                 grade,
