@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class RedditBinder {
 
+    private static String REGEX_ALPHANUM = "[^a-zA-Z0-9]";
     private Subreddit subreddit;
 
     /**
@@ -55,7 +56,7 @@ public class RedditBinder {
     public Video parseVideo(final JsonNode child) {
 
         final JsonNode videoInfo = child.path("secure_media").path("reddit_video");
-        final String title = child.path("title").asText();
+        final String title = child.path("title").asText().replaceAll(REGEX_ALPHANUM, "_");
 
         final MediaFormat mediaFormat = new MediaFormat(
                 videoInfo.path("height").asInt(),
@@ -72,8 +73,8 @@ public class RedditBinder {
                 title,
                 child.path("author").asText(),
                 videoInfo.path("fallback_url").asText(),
-                String.format("%s%s.mp4", Main.OUTPUT_FOLDER, title.replaceAll("[^a-zA-Z0-9]", "_")),
-                String.format("%s%s-audio.mp4", Main.OUTPUT_FOLDER, title.replaceAll("[^a-zA-Z0-9]", "_")),
+                String.format("%s%s.mp4", Main.OUTPUT_FOLDER, title),
+                String.format("%s%s-audio.mp4", Main.OUTPUT_FOLDER, title),
                 parseDate(child.path("created").asInt()),
                 child.path("over_18").asBoolean(),
                 mediaFormat,
@@ -96,11 +97,15 @@ public class RedditBinder {
                 child.path("upvote_ratio").floatValue()
         );
 
+        final String url = child.path("url").asText();
+        char[] extension = new char[4];
+        url.getChars(url.lastIndexOf('.')+1, url.length(), extension, 0);
+
         return new Thumbnail(
                 child.path("title").asText(),
                 child.path("author").asText(),
-                child.path("url").asText(),
-                String.format("%s%s.jpg", Main.OUTPUT_FOLDER, child.path("title").asText().replaceAll("[^a-zA-Z0-9]", "_")),
+                url,
+                String.format("%s%s.%s", Main.OUTPUT_FOLDER, child.path("title").asText().replaceAll(REGEX_ALPHANUM, "_"), String.valueOf(extension)),
                 parseDate(child.path("created").asInt()),
                 child.path("over_18").asBoolean(),
                 grade,
