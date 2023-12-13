@@ -1,11 +1,11 @@
 package fr.dupont.picker;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.dupont.ColorLogger;
 import fr.dupont.binder.RedditBinder;
 import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.exceptions.FailedToGetList;
 import fr.dupont.exceptions.FailedToRetrievedMedia;
-import fr.dupont.filter.VideoFilter;
 import fr.dupont.filter.mediafilter.AndMediaFilter;
 import fr.dupont.filter.mediafilter.GradeMediaFilter;
 import fr.dupont.filter.mediafilter.NsfwMediaFilter;
@@ -19,19 +19,23 @@ import fr.dupont.models.Subreddit;
 import fr.dupont.models.Video;
 import fr.dupont.repositories.RedditRepository;
 import fr.dupont.videomanipulation.MergeMediaFiles;
+import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 public class VideoPicker {
 
     private final RedditRepository redditRepository = new RedditRepository();
+    private final ColorLogger logger = new ColorLogger();
+    private final int videoDuration;
     private final List<Subreddit> subreddits;
 
-    public VideoPicker(List<Subreddit> subreddits) {
-        this.subreddits = subreddits;
-    }
-
+    /**
+     * Pick videos from subreddits, download them and merge them.
+     * Print a progress bar per subreddit.
+     */
     public void pickVideos() {
         subreddits.forEach(subreddit -> {
             final RedditBinder redditBinder = new RedditBinder(subreddit);
@@ -69,17 +73,25 @@ public class VideoPicker {
 
     /**
      * Merge audio and video and clean the local file
-     * to only keep the merged file
+     * to only keep the merged file.
+     * Print a progress bar.
      * @param videos List of medias
      */
-    public void mergeAndClean(List<Video> videos) {
-        MergeMediaFiles merger = new MergeMediaFiles();
+    public void mergeAndClean(final List<Video> videos) {
+        final MergeMediaFiles merger = new MergeMediaFiles();
+        final int subPosition = subreddits.indexOf(videos.get(0).getSubreddit());
+        final float maxDuration = videos.get(0).getSubreddit().percentage() * videoDuration;
+        float duration = 0F;
 
-        videos.forEach(video -> {
+        for (Video video : videos) {
+            if (duration > maxDuration)
+                return;
+
+            duration += video.getDuration();
+
             try {
                 redditRepository.downloadMedia(video);
             } catch (FailedToRetrievedMedia e) {
-                e.printStackTrace();
                 FolderUtils.deleteFile(video.getLocalUrl());
             }
 
@@ -88,7 +100,9 @@ public class VideoPicker {
             FolderUtils.deleteFile(video.getLocalAudioUrl());
             FolderUtils.deleteFile(video.getLocalUrl());
 
-        });
+            logger.print(ColorLogger.Level.INFO, "Subreddit: " + (subPosition+1) + "/" + subreddits.size() + " | " + Math.min((duration / maxDuration) * 100, 100F) + "%");
+
+        }
 
     }
 
