@@ -24,7 +24,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
  */
 public class RedditRepository {
 
-    private static final int MAX_MEDIA_PER_SUBREDDIT = 50;
+    private static final int MAX_MEDIA_PER_SUBREDDIT = 100;
     private static final int REQUEST_ATTEMPT = 2;
     private static final int TIMEOUT_SECONDS = 4;
     private final String[] audioSuffixes = { "DASH_AUDIO_128","DASH_AUDIO_64" };
