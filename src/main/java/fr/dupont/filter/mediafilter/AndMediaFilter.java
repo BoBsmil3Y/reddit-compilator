@@ -5,6 +5,10 @@ import fr.dupont.models.Media;
 
 import java.util.List;
 
+/**
+ * Filter to accumulate other MediaFilter and
+ * apply all constraint to list of Media.
+ */
 public class AndMediaFilter implements MediaFilter {
 
     private final List<MediaFilter> mediaFilters;

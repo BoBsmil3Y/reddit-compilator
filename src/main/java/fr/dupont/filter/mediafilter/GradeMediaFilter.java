@@ -6,7 +6,9 @@ import lombok.Getter;
 
 import java.util.List;
 
-@Getter
+/**
+ * Filter medias to take post with good rating.
+ */
 public class GradeMediaFilter implements MediaFilter {
 
     private final float minUpVoteRatio = 0.8F;

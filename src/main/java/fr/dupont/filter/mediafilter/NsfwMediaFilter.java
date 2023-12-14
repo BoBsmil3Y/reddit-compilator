@@ -5,6 +5,9 @@ import fr.dupont.models.Media;
 
 import java.util.List;
 
+/**
+ * Filter medias to exclude NSFW posts.
+ */
 public class NsfwMediaFilter implements MediaFilter {
 
     @Override

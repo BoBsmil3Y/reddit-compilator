@@ -36,20 +36,24 @@ public class VideoPicker {
      * Pick videos from subreddits, download them and merge them.
      * Print a progress bar per subreddit.
      */
-    public void pickVideos() {
+    public List<Video> pickVideos() {
+        ArrayList<Video> videoCollection = new ArrayList<>();
+
         subreddits.forEach(subreddit -> {
             final RedditBinder redditBinder = new RedditBinder(subreddit);
 
             try {
                 final ArrayList<Media> medias = (ArrayList<Media>) redditBinder.parse(redditRepository.getTopMediaListOfASub(subreddit));
                 final List<Video> videos = filterVideos(medias);
-                mergeAndClean(videos);
+                videoCollection.addAll(mergeAndClean(videos));
 
             } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse e) {
                 e.printStackTrace();
             }
 
         });
+
+        return videoCollection;
     }
 
     /**
@@ -77,20 +81,23 @@ public class VideoPicker {
      * Print a progress bar.
      * @param videos List of medias
      */
-    public void mergeAndClean(final List<Video> videos) {
+    public List<Video> mergeAndClean(final List<Video> videos) {
         final MergeMediaFiles merger = new MergeMediaFiles();
         final int subPosition = subreddits.indexOf(videos.get(0).getSubreddit());
         final float maxDuration = videos.get(0).getSubreddit().percentage() * videoDuration;
         float duration = 0F;
 
+        ArrayList<Video> downloaded = new ArrayList<>();
+
         for (Video video : videos) {
             if (duration > maxDuration)
-                return;
+                return downloaded;
 
             duration += video.getDuration();
 
             try {
                 redditRepository.downloadMedia(video);
+                downloaded.add(video);
             } catch (FailedToRetrievedMedia e) {
                 FolderUtils.deleteFile(video.getLocalUrl());
             }
@@ -104,6 +111,7 @@ public class VideoPicker {
 
         }
 
+        return downloaded;
     }
 
 
