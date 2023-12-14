@@ -5,6 +5,10 @@ import fr.dupont.models.Video;
 
 import java.util.List;
 
+/**
+ * Filter to exclude videos that didn't respect time
+ * constraint set by the Subreddit.
+ */
 public class DurationFilter implements VideoFilter {
 
     @Override

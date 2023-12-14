@@ -5,6 +5,10 @@ import fr.dupont.models.Video;
 
 import java.util.List;
 
+/**
+ * Filter to only take videos that are greater than
+ * 720 pixels wide.
+ */
 public class QualityFilter implements VideoFilter {
 
     @Override

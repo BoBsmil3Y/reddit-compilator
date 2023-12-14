@@ -1,11 +1,14 @@
 package fr.dupont.filter.videofilter;
 
 import fr.dupont.filter.VideoFilter;
-import fr.dupont.models.Media;
 import fr.dupont.models.Video;
 
 import java.util.List;
 
+/**
+ * Filter to accumulate other VideoFilter and
+ * apply all constraint to list of Video.
+ */
 public class AndVideoFilter implements VideoFilter {
 
     private final List<VideoFilter> videoFilters;
