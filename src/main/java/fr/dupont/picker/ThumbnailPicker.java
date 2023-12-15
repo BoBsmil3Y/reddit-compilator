@@ -18,6 +18,9 @@ import fr.dupont.repositories.RedditRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pick the best thumbnail from a list of subreddits.
+ */
 public class ThumbnailPicker {
 
     private final RedditRepository redditRepository = new RedditRepository();
@@ -28,6 +31,10 @@ public class ThumbnailPicker {
         this.subreddits = subreddits;
     }
 
+    /**
+     * Pick the best thumbnail from a list of subreddits.
+     * @return the downloaded thumbnail
+     */
     public Thumbnail pickThumbnails() {
         final ArrayList<Thumbnail> allThumbnails = new ArrayList<>();
 
@@ -64,6 +71,11 @@ public class ThumbnailPicker {
                 .toList();
     }
 
+    /**
+     * Sort thumbnails by ups.
+     * @param thumbnails List of thumbnails
+     * @return the best thumbnail
+     */
     private ArrayList<Thumbnail> sortAndPickThumbnail(List<Thumbnail> thumbnails) {
         ArrayList<Thumbnail> sortedThumbnails = new ArrayList<>(thumbnails);
         sortedThumbnails.sort(
@@ -74,7 +86,12 @@ public class ThumbnailPicker {
         return sortedThumbnails;
     }
 
-    public Thumbnail downloadThumbnail(final List<Thumbnail> sortedThumbnails) {
+    /**
+     * Download the best thumbnail.
+     * @param sortedThumbnails List of sorted thumbnails
+     * @return the downloaded thumbnail. Null if all thumbnails failed to download.
+     */
+    private Thumbnail downloadThumbnail(final List<Thumbnail> sortedThumbnails) {
         int attempt = 0;
 
         while (attempt < sortedThumbnails.size()) {
