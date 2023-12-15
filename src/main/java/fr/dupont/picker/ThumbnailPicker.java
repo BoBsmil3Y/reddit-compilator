@@ -95,11 +95,11 @@ public class ThumbnailPicker {
         while (attempt < sortedThumbnails.size()) {
             try {
                 redditRepository.downloadMedia(sortedThumbnails.get(attempt));
-                logger.print(ColorLogger.Level.SUCCESS, String.format("Best thumbnail downloaded successfully! Coming from %s subreddit.", sortedThumbnails.get(attempt).getSubreddit().name()));
+                logger.print(ColorLogger.Level.SUCCESS, "Best thumbnail downloaded successfully! Coming from " + sortedThumbnails.get(attempt).getSubreddit().name() + " subreddit.");
                 return sortedThumbnails.get(attempt);
 
             } catch (FailedToRetrievedMedia e) {
-                logger.print(ColorLogger.Level.ERROR, String.format("Failed to download thumbnail from %s subreddit. Starting %d attempt.", sortedThumbnails.get(attempt).getSubreddit().name(), attempt));
+                logger.print(ColorLogger.Level.ERROR, "Failed to download thumbnail from " + sortedThumbnails.get(attempt).getSubreddit().name() + " subreddit.");
                 attempt++;
             }
         }
