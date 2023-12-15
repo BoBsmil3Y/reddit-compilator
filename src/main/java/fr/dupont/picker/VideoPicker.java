@@ -106,6 +106,7 @@ public class VideoPicker {
 
             FolderUtils.deleteFile(video.getLocalAudioUrl());
             FolderUtils.deleteFile(video.getLocalUrl());
+            FolderUtils.moveFile(video.getLocalUrl().replace(".mp4", "-merged.mp4"), video.getLocalUrl());
 
             logger.print(ColorLogger.Level.INFO, "Subreddit: " + (subPosition+1) + "/" + subreddits.size() + " | " + Math.min((duration / maxDuration) * 100, 100F) + "%");
 

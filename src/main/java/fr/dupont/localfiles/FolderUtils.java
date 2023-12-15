@@ -63,4 +63,16 @@ public class FolderUtils {
         }
     }
 
+    /**
+     * Move a file from a source to a destination.
+     * @param source The source of the file.
+     * @param destination The destination of the file.
+     */
+    public static void moveFile(String source, String destination) {
+        try {
+            Files.move(Paths.get(source), Paths.get(destination));
+        } catch (IOException e) {
+            logger.print(ColorLogger.Level.ERROR, String.format("Failed to move %s to %s !%n%s", source, destination, e.getMessage()));
+        }
+    }
 }
