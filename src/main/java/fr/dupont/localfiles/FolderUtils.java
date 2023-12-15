@@ -9,8 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Utils class to create folders and files.
+ * Also delete files.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FolderUtils {
+
+    private static final ColorLogger logger = new ColorLogger();
 
     /**
      * Create a folder if it doesn't exist.
@@ -18,8 +24,6 @@ public class FolderUtils {
      * @param isFile Distinction between file and folder.
      */
     public static void createLocalFile(String itemPath, boolean isFile) {
-
-        ColorLogger logger = new ColorLogger();
 
         try {
 
@@ -41,10 +45,8 @@ public class FolderUtils {
             logger.print(ColorLogger.Level.SUCCESS, String.format("Item %s created!", itemPath));
 
         } catch (IOException e) {
-
             logger.print(ColorLogger.Level.ERROR, String.format("Failed to create %s !%nShutting down the program.%n%s", itemPath, e.getMessage()));
             System.exit(1);
-
         }
 
     }
@@ -57,7 +59,7 @@ public class FolderUtils {
         try {
             Files.deleteIfExists(Paths.get(path));
         } catch (IOException e) {
-            new ColorLogger().print(ColorLogger.Level.ERROR, String.format("Failed to delete %s !%n%s", path, e.getMessage()));
+            logger.print(ColorLogger.Level.ERROR, String.format("Failed to delete %s !%n%s", path, e.getMessage()));
         }
     }
 
