@@ -14,20 +14,25 @@ import fr.dupont.models.Media;
 import fr.dupont.models.Subreddit;
 import fr.dupont.models.Thumbnail;
 import fr.dupont.repositories.RedditRepository;
+import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pick the best thumbnail from a list of subreddits.
+ */
+@AllArgsConstructor
 public class ThumbnailPicker {
 
     private final RedditRepository redditRepository = new RedditRepository();
     private final ColorLogger logger = new ColorLogger();
     private final List<Subreddit> subreddits;
 
-    public ThumbnailPicker(List<Subreddit> subreddits) {
-        this.subreddits = subreddits;
-    }
-
+    /**
+     * Pick the best thumbnail from a list of subreddits.
+     * @return the downloaded thumbnail
+     */
     public Thumbnail pickThumbnails() {
         final ArrayList<Thumbnail> allThumbnails = new ArrayList<>();
 
@@ -40,7 +45,7 @@ public class ThumbnailPicker {
                 allThumbnails.add(sortAndPickThumbnail(thumbnailsToChoose).getFirst());
 
             } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse e) {
-                throw new RuntimeException(e);
+                logger.print(ColorLogger.Level.ERROR, "Failed to get list of media from " + subreddit.name() + " subreddit.");
             }
         });
 
@@ -64,6 +69,11 @@ public class ThumbnailPicker {
                 .toList();
     }
 
+    /**
+     * Sort thumbnails by ups.
+     * @param thumbnails List of thumbnails
+     * @return the best thumbnail
+     */
     private ArrayList<Thumbnail> sortAndPickThumbnail(List<Thumbnail> thumbnails) {
         ArrayList<Thumbnail> sortedThumbnails = new ArrayList<>(thumbnails);
         sortedThumbnails.sort(
@@ -74,17 +84,22 @@ public class ThumbnailPicker {
         return sortedThumbnails;
     }
 
-    public Thumbnail downloadThumbnail(final List<Thumbnail> sortedThumbnails) {
+    /**
+     * Download the best thumbnail.
+     * @param sortedThumbnails List of sorted thumbnails
+     * @return the downloaded thumbnail. Null if all thumbnails failed to download.
+     */
+    private Thumbnail downloadThumbnail(final List<Thumbnail> sortedThumbnails) {
         int attempt = 0;
 
         while (attempt < sortedThumbnails.size()) {
             try {
                 redditRepository.downloadMedia(sortedThumbnails.get(attempt));
-                logger.print(ColorLogger.Level.SUCCESS, "Best thumbnail downloaded successfully! Coming from " + sortedThumbnails.get(attempt).getSubreddit().name() + " subreddit.");
+                logger.print(ColorLogger.Level.SUCCESS, String.format("Best thumbnail downloaded successfully! Coming from %s subreddit.", sortedThumbnails.get(attempt).getSubreddit().name()));
                 return sortedThumbnails.get(attempt);
 
             } catch (FailedToRetrievedMedia e) {
-                logger.print(ColorLogger.Level.ERROR, "Failed to download thumbnail from " + sortedThumbnails.get(attempt).getSubreddit().name() + " subreddit.");
+                logger.print(ColorLogger.Level.ERROR, String.format("Failed to download thumbnail from %s subreddit. Starting %d attempt.", sortedThumbnails.get(attempt).getSubreddit().name(), attempt));
                 attempt++;
             }
         }
