@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * This class is used to parse the response of the Reddit API.
+ * Return a list of Media, can be a Video or a Thumbnail.
+ */
 @AllArgsConstructor
 public class RedditBinder {
 
@@ -53,7 +57,7 @@ public class RedditBinder {
      * @param child The JsonNode to parse.
      * @return The video information.
      */
-    public Video parseVideo(final JsonNode child) {
+    private Video parseVideo(final JsonNode child) {
 
         final JsonNode videoInfo = child.path("secure_media").path("reddit_video");
         final String title = child.path("title").asText().replaceAll(REGEX_ALPHANUM, "_");
@@ -89,7 +93,7 @@ public class RedditBinder {
      * @param child The JsonNode to parse.
      * @return The image information.
      */
-    public Thumbnail parseImage(final JsonNode child) {
+    private Thumbnail parseImage(final JsonNode child) {
 
         final Grade grade = new Grade(
                 child.path("score").asInt(),

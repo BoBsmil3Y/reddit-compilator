@@ -9,10 +9,17 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Merge media files with FFMPEG.
+ */
 public class MergeMediaFiles {
 
     private final ColorLogger logger = new ColorLogger();
 
+    /**
+     * Merge a video and an audio file.
+     * @param video The video to merge.
+     */
     public void mergeAudioAndVideo(Video video) {
 
         final String localUrlMerged = video.getLocalUrl().replace(".mp4", "-merged.mp4");
@@ -28,6 +35,11 @@ public class MergeMediaFiles {
         }
     }
 
+    /**
+     * Concat a list of videos into one final.
+     * @param config The config object.
+     * @param videos The list of videos to merge.
+     */
     public void mergeVideos(Config config, List<Video> videos) {
 
         final String localUrlMerged = config.video_number() + "-" + config.video_base_name() + ".mp4";
@@ -60,6 +72,10 @@ public class MergeMediaFiles {
         }
     }
 
+    /**
+     * Check if FFMPEG is installed.
+     * @return true if FFMPEG is installed, false otherwise.
+     */
     public boolean isFfmpegIsInstalled() {
         final String[] command = {"ffmpeg", "-version"};
         try {

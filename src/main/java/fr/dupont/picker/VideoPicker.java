@@ -24,6 +24,9 @@ import lombok.AllArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pick the best videos from a list of subreddits.
+ */
 @AllArgsConstructor
 public class VideoPicker {
 
