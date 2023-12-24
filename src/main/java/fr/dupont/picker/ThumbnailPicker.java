@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Pick the best thumbnail from a list of subreddits.
@@ -44,7 +45,7 @@ public class ThumbnailPicker {
                 final ArrayList<Thumbnail> thumbnailsToChoose = sortAndPickThumbnail(filterThumbnails(medias));
                 allThumbnails.add(sortAndPickThumbnail(thumbnailsToChoose).getFirst());
 
-            } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse e) {
+            } catch (FailedToGetList | JsonProcessingException | EmptyApiResponse | NoSuchElementException e) {
                 logger.print(ColorLogger.Level.ERROR, "Failed to get list of media from " + subreddit.name() + " subreddit.");
             }
         });
