@@ -66,7 +66,7 @@ public class VideoPicker {
      */
     public List<Video> filterVideos(List<Media> medias) {
         final AndVideoFilter andVideoFilter = new AndVideoFilter(new DurationFilter(), new QualityFilter());
-        final AndMediaFilter andMediaFilter = new AndMediaFilter(new GradeMediaFilter(), new NsfwMediaFilter(), new TodayFilter());
+        final AndMediaFilter andMediaFilter = new AndMediaFilter(new GradeMediaFilter( 0.8F ), new NsfwMediaFilter(), new TodayFilter());
 
         medias = andMediaFilter.apply(medias);
 
@@ -85,6 +85,9 @@ public class VideoPicker {
      * @param videos List of medias
      */
     public List<Video> mergeAndClean(final List<Video> videos) {
+
+        if (videos.isEmpty())  return new ArrayList<>();
+
         final MergeMediaFiles merger = new MergeMediaFiles();
         final int subPosition = subreddits.indexOf(videos.get(0).getSubreddit());
         final float maxDuration = videos.get(0).getSubreddit().percentage() * videoDuration;

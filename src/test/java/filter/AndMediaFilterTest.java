@@ -19,7 +19,7 @@ public class AndMediaFilterTest {
     List<Media> medias;
     Thumbnail thumbnail;
     Video video, videoNsfw, badVideo;
-    MediaFilter mediaFilter = new AndMediaFilter(new GradeMediaFilter(), new NsfwMediaFilter());
+    MediaFilter mediaFilter = new AndMediaFilter(new GradeMediaFilter( 0.8F ), new NsfwMediaFilter());
 
     @Before
     public void setUp() {

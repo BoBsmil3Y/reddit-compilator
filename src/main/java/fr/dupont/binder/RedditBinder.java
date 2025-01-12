@@ -42,6 +42,10 @@ public class RedditBinder {
         while(children.hasNext()){
             final JsonNode child = children.next().path("data");
 
+            JsonNode mediaType = child.get("media").get("type");
+            if (mediaType != null && mediaType.asText().contains("youtube"))
+                continue;
+
             if (child.get("url_overridden_by_dest").asText().contains("v.redd.it")) {
                 medias.add(parseVideo(child));
             } else {

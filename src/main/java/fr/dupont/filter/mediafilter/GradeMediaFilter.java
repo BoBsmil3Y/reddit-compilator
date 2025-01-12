@@ -11,7 +11,11 @@ import java.util.List;
  */
 public class GradeMediaFilter implements MediaFilter {
 
-    private final float minUpVoteRatio = 0.8F;
+    private float minUpVoteRatio;
+
+    public GradeMediaFilter(float minUpVoteRatio){
+        this.minUpVoteRatio = minUpVoteRatio;
+    }
 
     @Override
     public List<Media> apply(List<Media> medias) {

@@ -16,7 +16,7 @@ public class GradeMediaFilterTest {
     List<Media> medias;
     Thumbnail thumbnail;
     Video video, videoLowUps;
-    MediaFilter mediaFilter = new GradeMediaFilter();
+    MediaFilter mediaFilter = new GradeMediaFilter( 0.8F );
 
     @Before
     public void setUp() {

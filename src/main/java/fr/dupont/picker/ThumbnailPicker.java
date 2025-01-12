@@ -60,7 +60,7 @@ public class ThumbnailPicker {
      * @return a list of Media filtered
      */
     public List<Thumbnail> filterThumbnails(List<Media> medias) {
-        final AndMediaFilter andMediaFilter = new AndMediaFilter(new GradeMediaFilter(), new NsfwMediaFilter(), new TodayFilter());
+        final AndMediaFilter andMediaFilter = new AndMediaFilter(new GradeMediaFilter( 0.7F ), new NsfwMediaFilter(), new TodayFilter());
 
         medias = andMediaFilter.apply(medias);
 

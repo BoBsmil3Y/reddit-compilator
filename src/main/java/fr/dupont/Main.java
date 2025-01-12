@@ -31,7 +31,7 @@ public class Main {
         if (! merger.isFfmpegIsInstalled())
             System.exit(1);
 
-        new VideoPicker(config.video_subreddits()).pickVideos();
+        new VideoPicker(config.video_duration(), config.video_subreddits()).pickVideos();
         new ThumbnailPicker(config.thumbnail_subreddits()).pickThumbnails();
 
         //TODO: Add a selection class to select the best videos
