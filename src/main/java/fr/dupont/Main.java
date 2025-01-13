@@ -8,6 +8,7 @@ import fr.dupont.picker.ThumbnailPicker;
 import fr.dupont.picker.VideoPicker;
 import fr.dupont.videomanipulation.MergeMediaFiles;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -31,7 +32,7 @@ public class Main {
         if (! merger.isFfmpegIsInstalled())
             System.exit(1);
 
-        new VideoPicker(config.video_duration(), config.video_subreddits()).pickVideos();
+        ArrayList<Video> downloadedVideos = (ArrayList<Video>) new VideoPicker(config.video_duration(), config.video_subreddits()).pickVideos();
         new ThumbnailPicker(config.thumbnail_subreddits()).pickThumbnails();
 
         //TODO: Add a selection class to select the best videos

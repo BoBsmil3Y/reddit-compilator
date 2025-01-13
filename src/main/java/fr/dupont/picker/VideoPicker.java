@@ -5,6 +5,7 @@ import fr.dupont.ColorLogger;
 import fr.dupont.binder.RedditBinder;
 import fr.dupont.exceptions.EmptyApiResponse;
 import fr.dupont.exceptions.FailedToGetList;
+import fr.dupont.exceptions.FailedToMergeVideo;
 import fr.dupont.exceptions.FailedToRetrievedMedia;
 import fr.dupont.filter.mediafilter.AndMediaFilter;
 import fr.dupont.filter.mediafilter.GradeMediaFilter;
@@ -89,8 +90,8 @@ public class VideoPicker {
         if (videos.isEmpty())  return new ArrayList<>();
 
         final MergeMediaFiles merger = new MergeMediaFiles();
-        final int subPosition = subreddits.indexOf(videos.get(0).getSubreddit());
-        final float maxDuration = videos.get(0).getSubreddit().percentage() * videoDuration;
+        final int subPosition = subreddits.indexOf(videos.getFirst().getSubreddit());
+        final float maxDuration = videos.getFirst().getSubreddit().percentage() * videoDuration;
         float duration = 0F;
 
         ArrayList<Video> downloaded = new ArrayList<>();
@@ -102,20 +103,20 @@ public class VideoPicker {
             duration += video.getDuration();
 
             try {
+                // Add to return array only if download and merge are successful
                 redditRepository.downloadMedia(video);
+                merger.mergeAudioAndVideo(video);
                 downloaded.add(video);
-            } catch (FailedToRetrievedMedia e) {
+
+                FolderUtils.deleteFile(video.getLocalAudioUrl());
                 FolderUtils.deleteFile(video.getLocalUrl());
+
+                FolderUtils.moveFile(video.getLocalUrl().replace(".mp4", "-merged.mp4"), video.getLocalUrl());
+            } catch (FailedToRetrievedMedia | FailedToMergeVideo e) {
+                continue;
             }
 
-            merger.mergeAudioAndVideo(video);
-
-            FolderUtils.deleteFile(video.getLocalAudioUrl());
-            FolderUtils.deleteFile(video.getLocalUrl());
-            FolderUtils.moveFile(video.getLocalUrl().replace(".mp4", "-merged.mp4"), video.getLocalUrl());
-
             logger.print(ColorLogger.Level.INFO, "Subreddit: " + (subPosition+1) + "/" + subreddits.size() + " | " + Math.min((duration / maxDuration) * 100, 100F) + "%");
-
         }
 
         return downloaded;

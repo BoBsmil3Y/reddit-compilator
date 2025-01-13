@@ -1,6 +1,7 @@
 package fr.dupont.videomanipulation;
 
 import fr.dupont.ColorLogger;
+import fr.dupont.exceptions.FailedToMergeVideo;
 import fr.dupont.models.Config;
 import fr.dupont.models.Video;
 
@@ -20,7 +21,7 @@ public class MergeMediaFiles {
      * Merge a video and an audio file.
      * @param video The video to merge.
      */
-    public void mergeAudioAndVideo(Video video) {
+    public void mergeAudioAndVideo(Video video) throws FailedToMergeVideo {
 
         final String localUrlMerged = video.getLocalUrl().replace(".mp4", "-merged.mp4");
         final String[] command = {"ffmpeg", "-i", video.getLocalUrl(), "-i", video.getLocalAudioUrl(), "-c:v", "copy", "-c:a", "aac", "-y", localUrlMerged};
@@ -32,6 +33,7 @@ public class MergeMediaFiles {
             logger.print(ColorLogger.Level.SUCCESS, "Merge successful for : " + video.getUrl() + " !");
         } catch (Exception e) {
             logger.print(ColorLogger.Level.ERROR, "An error occurred when merging :  " + video.getUrl() + " ! Error: \n" + e.getMessage() );
+            throw new FailedToMergeVideo();
         }
     }
 
